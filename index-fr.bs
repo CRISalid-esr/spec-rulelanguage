@@ -1,0 +1,731 @@
+<pre class='metadata'>
+Title : Langage de règles pour les processus métiers décentralisés
+Shortname : languederègle
+Level : 1
+Status : iso/WD
+URL : https://mellonscholarlycommunication.github.io/spec-rulelanguage
+Editor : Patrick Hochstenbach, [IDLab - Université de Gand] (https://knows.idlab.ugent.be), patrick.hochstenbach@ugent.be
+Editor : Miel Vander Sande, meemoo - [Institut flamand pour l'archivage] (https://meemoo.be), miel.vandersande@meemoo.be
+Editor : Ruben Dedecker, [IDLab - Université de Gand] (https://knows.idlab.ugent.be), ruben.dedecker@ugent.be
+Editor : Jeroen Werbrouck, [IDLab - Université de Gand] (https://knows.idlab.ugent.be), Jeroen.Werbrouck@ugent.be
+Abstract : Ce document spécifie la définition et l'application d'un langage de règles pour capturer des processus métiers lisibles par machine.
+Markup Shorthands : markdown yes
+</pre>
+
+<style>
+table {
+  margin: 25px auto;
+  border-collapse: collapse;
+  border: 1px solid #eee;
+  border-bottom: 2px solid #005A9C;
+}
+table tr:hover {
+  background: #f4f4f4;
+}
+table tr:hover td {
+  color: #555;
+}
+table th, table td {
+  color: #999;
+  border: 1px solid #eee;
+  padding: 12px 12px;
+  border-collapse: collapse;
+}
+table th {
+  background: #005A9C;
+  color: #fff;
+}
+table th.last {
+  border-right: none;
+}
+</style>
+
+Ensemble de documents {#set}
+=======================
+
+Ce document fait partie des spécifications produites par les projets **ResearcherPod** et **ErfgoedPod** :
+
+1. [Aperçu](/spec-overview/)
+2. [Orchestrator](/spec-orchestrator/)
+3. [Data Pod](/spec-datapod/)
+4. [Langage de règles](/spec-rulelanguage/) (ce document)
+5. [Journal des événements du cycle de vie des artefacts](/spec-eventlog/)
+6. [Notifications](/spec-notifications/)
+7. [Collecteur](/spec-collector/)
+
+Introduction {#intro}
+=====================
+
+Introduction ici.
+
+Règles du jeu
+=====================
+
+Un règlement est un ensemble de règles métiers lisibles par machine qui indiquent à l'orchestrateur
+les [actions](/spec-overview/#Action) à prendre en réponse à un [déclencheur](/spec-overview/#Trigger)
+tel que les notifications LDN entrantes.
+
+Pour démontrer les capacités des politiques et les cas d'utilisation possibles qu'elle doit couvrir, nous introduisons un
+pseudo-langage de règles qui sert de guide pour trouver des implémentations de référence. Notre pseudolangage
+combine des fonctionnalités de Drools et SPARQL. Des exemples sont donnés de la façon dont certaines des fonctionnalités
+de ce langage peuvent être mises en œuvre dans une implémentation concrète.
+
+Chaque règle dans un règlement a la structure des clauses de **règlement**, **règle**, **quand**, **alors** :
+
+<div class='example'>
+**règlement** *Description*?
+
+&#35; Ceci est un commentaire
+
+[*Prefixe*]*
+
+**règle** *Description*?
+
+[*Prefixe*]*
+
+**quand**
+
+    [*Condition*] *
+
+**alors**
+
+    [*Action*] *
+</div>
+
+Un **règlement** peut avoir une ou plusieurs **règles**. Chaque **règle** a une clause **quand** qui
+contient zéro ou plusieurs conditions qui doivent correspondre à un graphe. Chaque **règle** a une clause **alors** qui
+contient zéro ou plusieurs actions, de nouveaux triplets générés, lorsqu'un graphe d'entrée correspond
+aux conditions. La section **règlement** et chaque **règle** peuvent définir des abréviations de préfixes pour les motifs triples.
+Toutes les lignes commençant par un dièse (&#35;) sont interprétées comme des commentaires.
+
+## Exemple simple
+
+Un exemple de règle simple :
+
+<div class='example'>
+
+<pre>
+
+<b>règle</b> "Ajouter à l'EventLog"
+
+ex:   &lt;http://example.org/&gt;
+as:   &lt;https://www.w3.org/ns/activitystreams#&gt;
+rdf:  &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+pol:  &lt;https://www.example.org/ns/policy#&gt;
+fno:  &lt;https://w3id.org/function/ontology#&gt;
+
+<b>quand</b>
+
+  ?s a as:Announce . <i>OU</i>
+    ?s a as:Create .
+
+<b>alors</b>
+
+  ?s pol:policy [
+      a fno:Execution ;
+      fno:executes ex:appendToLog
+  ] .
+  ?s pol:policy [
+      a fno:Execution ;
+      fno:executes ex:removeBlindCopies
+  ] .
+</pre>
+
+</div>
+
+Etant donné une notification LDN :
+
+<div class='example'>
+```
+{
+  "@context": "https://www.w3.org/ns/activitystreams",
+  "id": "" ,
+  "type": "Create" ,
+  "object": "http://miel.data.pod/publications/mellon.pdf",
+  "target": "http://ruben.data.pod/inbox",
+  "bcc": [
+   "http://patrick.data.pod/inbox",
+   "http://jeroen.data.pod/inbox"
+   ]
+}
+```
+</div>
+
+les règles donneront une sortie :
+
+<div class='example'>
+```
+@prefix ex:   <http://example.org/> .
+@prefix as:   <https://www.w3.org/ns/activitystreams#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix pol:  <https://www.example.org/ns/policy#> .
+@prefix fno:  <https://www.example.org/ns/policy#> .
+
+<http://this.document> pol:policy [
+      a fno:Execution ;
+      fno:executes ex:appendToLog
+] .
+<http://this.document> pol:policy [
+      a fno:Execution ;
+      fno:executes ex:removeBlindCopies
+] .
+```
+</div>
+
+Ces résultats pourraient déclencher un processus [Orchestratrice](/spec-overview/#Orchestratrice) qui ajoute l'événement Create
+au [EventLog](/spec-overview/#EventLog) et supprime les copies aveugles `bcc`.
+
+## Conditions
+
+Les conditions dans la clause **quand** sont interprétées comme des déclarations booléennes. Lorsque le
+condition est au format d'un triplet, cela signifie l'existence du triplet dans la
+données d'entrée. Ce comportement correspond aux déclarations SPARQL *WHERE* :
+
+<div class='example'>
+<pre>
+<b>quand</b>
+    ?s foaf:name "Herbert"  .      # une propriété `foad:name` égale à "Herbert" doit exister
+    ?s ?p  42  .                   # une propriété avec une valeur de 42 doit exister
+    ?s/as:object nrr:reviews ?o  . # un ?s/as:object/nrr:reviews imbriqué doit exister
+</pre>
+</div>
+
+Les fonctions de notre pseudolangage imitent les déclarations SPARQL *FILTER* :
+
+<div class='example'>
+<pre>
+   (?s ?p ?o) -> <i>SomeFunction avec (?s,?p,?o)</i>
+</pre>
+</div>
+
+Voici quelques exemples :
+
+<div class='example'>
+<pre>
+<b>quand</b>
+    # une ressource a une classe qui est as:Announce ou as:Accept
+    (?s a ?class) -> ?class IN (as:Announce , as:Accept) .
+
+    # une propriété doit avoir un nom insensible à la casse "yahoo"
+    (?s ?p ?o) -> regex(?o, "yahoo",i) .
+
+    # l'as:object doit avoir une valeur IRI
+    (?s as:object ?o) -> isIRI(?o) .
+
+    # l'as:objects doit avoir une valeur IRI ou être un blankNode
+    (?s as:object ?o) -> isIRI(?o) OR isBlank(?o) .
+
+    # isLocalEventResouce doit renvoyer une valeur true pour la valeur as:object
+    (?s as:object ?o) -> isLocalEventResouce(?o)
+
+    # le prédicat et l'objet doivent renvoyer une valeur true de myLocalFunction
+    (?s ?p ?o) -> myLocalFunction(?p, ?o) .
+
+    # combiner avec des booléens
+    (?s as:object ?o) -> isIRI(?o) OR isBlank(?o) .
+        OR ?s my:justATest true .
+
+</pre>
+</div>
+
+## Actions
+
+Les actions sont une liste de zéro ou plusieurs déclarations qui imitent les triplets générés
+par la déclaration SPARQL *CONSTRUCT* :
+
+<div class='example'>
+<pre>
+<b>alors</b>
+
+    ?this pol:policy [
+      a fno:Execution ;
+      fno:executes ex:sendMessage ;
+      ex:to "http://my.institute.org/inbox" ;
+      ex:from :Me ;
+      ex:message "Hello world"
+    ] .
+
+    ?this pol:policy [
+      a fno:Execution ;
+      fno:executes ex:appendToLog
+    ] .
+
+    (?this ?_ ?_) -> SomeFunctionThatGeneratesTriplesFor(?this) .
+</pre>
+</div>
+
+## Résultat
+
+Le résultat de l'exécution d'une règle est la génération de zéro ou plusieurs triplets. Ces triplets générés
+créent un graphe indépendant du graphe d'entrée du moteur de règles. Les règles ne peuvent pas s'influencer mutuellement.
+Cela imite le style de traitement des règles dans SHACL.
+
+Un exemple :
+
+<div class='example'>
+<pre>
+<b>règle</b> "Première règle"
+
+<b>quand</b>
+   ?s ?p ?o .
+
+<b>alors</b>
+   ?s my:match "première règle" .
+
+#---<br>
+<b>règle</b> "Deuxième règle"
+
+<b>quand</b>
+  ?s ?p ?o .
+
+<b>alors</b>
+  ?s my:match "deuxième règle" .
+
+#---<br>
+<b>règle</b> "Troisième règle"
+
+<b>quand</b>
+  ?s ?p ?o .
+
+<b>alors</b>
+  ?s my:match "troisième règle" .
+</pre>
+</div>
+
+Lorsque ces trois règles sont exécutées contre n'importe quel graphe d'entrée, cela aboutit à deux
+graphes : le graphe d'entrée et le graphe de résultat qui contient :
+
+<div class='example'>
+<pre>
+  my:input_id my:match "troisième règle" .
+  my:input_id my:match "première règle" .
+  my:input_id my:match "deuxième règle" .
+</pre>
+</div>
+
+Remarque : l'ordre dans lequel les règles sont exécutées n'est pas spécifié.
+
+Exemples
+=====================
+
+## Réception de notifications de données liées
+
+Nous montrons ici comment une règle peut être créée qui agit sur les notifications de données liées entrantes.
+
+Cette règle demandera d'ajouter une *offre AS2* au **EventLog** :
+
+<div class='example'>
+<pre>
+<b>règle</b> "Ajouter une offre à l'EventLog"
+
+ex:   &lt;http://example.org/&gt;
+as:   &lt;https://www.w3.org/ns/activitystreams#&gt;
+rdf:  &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+pol:  &lt;https://www.example.org/ns/policy#&gt;
+fno:  &lt;https://w3id.org/function/ontology#&gt;
+
+<b>quand</b>
+
+  ?s a as:Offer .
+
+<b>alors</b>
+  ?s pol:policy [
+    a fno:Execution ;
+    fno:executes ex:appendToLog
+  ] .
+</pre>
+</div>
+
+Étant donné le JSON-LD d'entrée suivant :
+
+<div class='example'>
+```
+{
+  "@context": [
+    "https://www.w3.org/ns/activitystreams",
+    "http://purl.org/coar/notify"
+  ],
+  "actor": {
+    "id": "https://orcid.org/0000-0002-1825-0097",
+    "ldp:inbox": "https://josiahcarberry.com/ldn/inbox",
+    "name": "Josiah Carberry",
+    "type": [
+      "Person"
+    ]
+  },
+  "id": "urn:uuid:0370c0fb-bb78-4a9b-87f5-bed307a509dd",
+  "object": {
+    "id": "https://origin-system.org/resources/0021",
+    "ietf:cite-as": "https://doi.org/10.4598/12123487",
+    "type": [
+      "Document"
+    ]
+  },
+  "origin": {
+    "id": "https://origin-system.org",
+    "ldp:inbox": "https://origin-system.org/inbox/",
+    "type": [
+      "Service"
+    ]
+  },
+  "target": {
+    "id": "https://target-system.org",
+    "ldp:inbox": "https://target-system.org/inbox/",
+    "type": [
+      "Service"
+    ]
+  },
+  "type": [
+    "Offer"
+  ]
+}
+```
+</div>
+
+Le règlement ci-dessus donnera un nouveau graphe avec ces triplets :
+
+<div class='example'>
+```
+@prefix ex:   <http://example.org/> .
+@prefix as:   <https://www.w3.org/ns/activitystreams#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix pol:  <https://www.example.org/ns/policy#> .
+@prefix fno:  <https://www.example.org/ns/policy#> .
+
+<urn:uuid:0370c0fb-bb78-4a9b-87f5-bed307a509dd> pol:policy [
+        a fno:Execution ;
+        fno:executes ex:appendToLog
+] .
+```
+</div>
+
+Un interpréteur de règles, tel que l'Orchestratrice, pourrait utiliser
+ce nouveau graphe généré pour écrire une copie de la notification d'une manière ou d'une autre dans le
+Journal des événements du cycle de vie de l'Artéfact. La déclaration `pol:appendToLog` est interprétée de cette manière
+comme un appel de procédure convenu qui doit être exécuté sur l'entrée JSON-LD.
+
+## Autres déclencheurs
+
+Les notifications AS2 ne peuvent pas seulement être générées par des acteurs externes mais aussi
+par des processus locaux internes. Par exemple, à intervalles périodiques, l'
+(externe) Orchestratrice peut surveiller une ressource. Lorsque l'état d'une ressource
+change, alors cela peut déclencher la création d'une notification AS2. Le règlement
+peut agir sur ces notifications et décider quoi faire avec ces informations.
+
+La façon dont ces notifications de déclenchement internes sont générées est hors de la portée
+de cette spécification. Nous supposons que l'activation d'un déclencheur entraîne
+la génération d'une notification AS2.
+
+### Observer les changements d'état des ressources
+
+Ce déclencheur est généré lorsqu'une ressource (externe) surveillée change d'état.
+
+Dans l'exemple ci-dessous, une nouvelle ressource `http://my.instutution.org/people/124/publications/a03218h`
+a été créée par `http://my.instutution.org/people/124`. L'Orchestratrice est déclenchée
+&mdash; par elle-même ou une source de confiance externe &mdash; de ce fait en utilisant la notification AS2 :
+
+<div class='example'>
+```
+{
+  "@context": [
+    "https://www.w3.org/ns/activitystreams",
+    "https://www.example.org/ns/policy"
+  ],
+  "actor": "http://my.instutution.org/people/124",
+  "id": "urn:uuid:0370c0fb-bb78-4a9b-87f5-bed307a509dd",
+  "object": "http://my.instutution.org/people/124/publications/a03218h",
+  "summary": "Une nouvelle publication a été créée par la personne 1234"
+}
+```
+</div>
+
+Un règlement pour envoyer des e-mails lorsque ce type de déclencheur d'état se produit peut être défini comme suit :
+
+<div class='example'>
+<pre>
+
+<b>règle</b> "Ajouter des définitions de déclencheur d'état"
+
+ex:   &lt;http://example.org/&gt;
+as:   &lt;https://www.w3.org/ns/activitystreams#&gt;
+rdf:  &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+pol:  &lt;https://www.example.org/ns/policy#&gt;
+fno:  &lt;https://w3id.org/function/ontology#&gt;
+
+<b>quand</b>
+
+  ?s a pol:StateTrigger . ET
+    ?s a as:Create .
+
+<b>alors</b>
+  ?s pol:policy [
+      a fno:Execution ;
+      fno:executes ex:sendEmail ;
+      ex:from "my@myself.and.i" ;
+      ex:to "you@yourself.edu" ;
+      ex:subject "Une nouvelle ressource a été créée !"
+  ] .
+
+</pre>
+</div>
+
+L'exécution du règlement donnera un nouveau graphe avec ces triplets :
+
+<div class='example'>
+```
+@prefix ex:   <http://example.org/> .
+@prefix as:   <https://www.w3.org/ns/activitystreams#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix pol:  <https://www.example.org/ns/policy#> .
+@prefix fno:  <https://www.example.org/ns/policy#> .
+
+_:b0 pol:policy [
+    a fno:Execution ;
+    fno:executes ex:sendEmail ;
+    ex:from "my@myself.and.i" ;
+    ex:to "you@yourself.edu" ;
+    ex:subject "Une nouvelle ressource a été créée !"
+] .
+```
+</div>
+
+Un certain processus `SendEmail` pourrait utiliser cette entrée avec la notification AS2 ci-dessus pour
+envoyer un e-mail à `you@yourself.edu` à propos de la nouvelle ressource.
+
+<div class='note'>
+Nous supposons qu'il existe des mesures de sécurité raisonnables en place, telles que des
+signatures numériques, pour limiter les applications autorisées à envoyer ce type de
+événements de déclenchement au moteur de règles.
+</div>
+
+### Déclencheur planifié
+
+Un déclencheur planifié est défini comme une activité récurrente à intervalle régulier.
+Dans l'exemple ci-dessous, nous supposons qu'un processus basé sur cron est capable de générer
+une notification AS2 à un moment précis. Nous supposons que tous les vendredis à 17h00
+CEST, le déclencheur `Weekend` est activé.
+
+<div class='example'>
+```(JSON)
+{
+  "@context": [
+    "https://www.w3.org/ns/activitystreams",
+    "https://www.example.org/ns/policy"
+  ],
+  "summary": "Déclencheur temporel",
+  "name": "Weekend",
+  "type": [
+    "Announce" , "pol:DateTimeTrigger"
+  ],
+  "startTime": "2021-07-09T17:00:00-01:00"
+}
+```
+</div>
+
+Une règle de politique pourrait être que pendant les weekends, une notification est envoyée à vos
+amis :
+
+<div class='example'>
+<pre>
+
+<b>règle</b> "Ajouter des définitions de déclencheur d'état"
+
+ex:   &lt;http://example.org/&gt;
+as:   &lt;https://www.w3.org/ns/activitystreams#&gt;
+rdf:  &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+pol:  &lt;https://www.example.org/ns/policy#&gt;
+fno:  &lt;https://w3id.org/function/ontology#&gt;
+
+<b>quand</b>
+
+  ?s a pol:DateTimeTrigger . ET ?s a as:Announce .
+  ?s as:name "Weekend" .
+
+<b>alors</b>
+  ?s pol:policy [
+    a fno:Execution ;
+    fno:executes ex:sendActivity ;
+    ex:body [
+      a as:Activity ;
+      as:actor [
+        a as:Person ;
+        as:name "Sally";
+      ] ;
+      as:object [
+        a as:Note ;
+        as:name "Allons au pub"
+      ] ;
+      as:to &lt;http://pod.me/my#friends&gt;
+    ]
+  ] .
+
+</pre>
+</div>
+
+Suggestions de mise en œuvre
+=====================
+
+## SPARQL
+
+Exemple 2 - Ajouter à l'EventLog
+
+<div class='example'>
+```
+PREFIX ex: <http://example.org/>
+PREFIX as: <https://www.w3.org/ns/activitystreams#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX pol: <https://www.example.org/ns/policy#>
+PREFIX fno: <https://w3id.org/function/ontology#>
+
+CONSTRUCT {
+  ?this pol:policy [
+      a fno:Execution ;
+      fno:executes ex:appendToLog
+  ] .
+  ?this pol:policy [
+      a fno:Execution ;
+      fno:executes ex:removeBlindCopies
+  ] .
+}
+WHERE {
+  ?this a ?type .
+  FILTER ( ?type IN (as:Announce , as:Create) )
+}
+```
+</div>
+
+Exemple 5 - Conditions
+
+<div class='example'>
+```
+PREFIX ex: <http://example.org/>
+PREFIX as: <https://www.w3.org/ns/activitystreams#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX pol: <https://www.example.org/ns/policy#>
+PREFIX fno: <https://w3id.org/function/ontology#>
+CONSTRUCT {
+  ...
+}
+WHERE {
+  ?this foaf:name "Herbert"  .
+  ?this ?p  42  .
+  ?this/as:object nrr:reviews ?o .
+}
+```
+</div>
+
+Exemple 7 - Exemples de fonctions
+
+<div class='example'>
+```
+PREFIX ex: <http://example.org/>
+PREFIX as: <https://www.w3.org/ns/activitystreams#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX pol: <https://www.example.org/ns/policy#>
+PREFIX fno: <https://www.example.org/ns/policy#>
+PREFIX list: <http://www.w3.org/2000/10/swap/list#>
+
+{
+  ?s a ?class .
+  ?class list:in (as:Announce as:Create) .
+}
+=>
+{
+  ?s pol:policy [
+      a fno:Execution ;
+      fno:executes ex:appendToLog
+  ] .
+  ?s pol:policy [
+      a fno:Execution ;
+      fno:executes ex:removeBlindCopies
+  ] .
+} .
+```
+</div>
+
+Exemple 2 - Ajouter à l'EventLog
+
+<div class='example'>
+```
+PREFIX ex: <http://example.org/>
+PREFIX as: <https://www.w3.org/ns/activitystreams#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX pol: <https://www.example.org/ns/policy#>
+PREFIX fno: <https://w3id.org/function/ontology#>
+PREFIX list: <http://www.w3.org/2000/10/swap/list#>
+
+{
+  ?s a ?class .
+  ?class list:in (as:Announce as:Create) .
+}
+==>
+{
+  ?s pol:policy [
+      a fno:Execution ;
+      fno:executes ex:appendToLog
+  ] .
+  ?s pol:policy [
+      a fno:Execution ;
+      fno:executes ex:removeBlindCopies
+  ] .
+} .
+```
+</div>
+
+Exemple 5 - Conditions
+
+<div class='example'>
+```
+PREFIX ex: <http://example.org/>
+PREFIX as: <https://www.w3.org/ns/activitystreams#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX pol: <https://www.example.org/ns/policy#>
+PREFIX fno: <https://www.example.org/ns/policy#>
+
+{
+  ?this foaf:name "Herbert"  .
+  ?this ?p  42  .
+  ?this!as:object nrr:reviews ?o .
+}
+=>
+{
+  ...
+} .
+```
+</div>
+
+Exemple 7 - Exemples de fonctions
+
+<div class='example'>
+```
+PREFIX ex: <http://example.org/>
+PREFIX as: <https://www.w3.org/ns/activitystreams#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX pol: <https://www.example.org/ns/policy#>
+PREFIX fno: <https://www.example.org/ns/policy#>
+PREFIX list: <http://www.w3.org/2000/10/swap/list#>
+PREFIX string: <http://www.w3.org/2000/10/swap/string#>
+PREFIX math: < http://www.w3.org/2000/10/swap/math#>
+
+{
+   ?this a ?class .
+   ?class list:in (as:Announce  as:Accept) .
+
+   ?this foo:name ?foo_val .
+   ?foo_val string:matches "yahoo" .
+
+   ( 1 2 3 4 5) math:product ?product .
+}
+=>
+{
+   ...
+} .
+```
+</div>
+
+Des exemples supplémentaires de notation3 sont disponibles sur [https://github.com/MellonScholarlyCommunication/spec-rulelanguage/tree/master/examples/n3](https://github.com/MellonScholarlyCommunication/spec-rulelanguage/tree/master/examples/n3).
+
+# Remerciements
+
+Nous remercions Herbert Van de Sompel, [DANS + Université de Gand](https://dans.knaw.nl/nl/), hvdsomp@gmail.com
+pour sa précieuse contribution lors de ce projet.

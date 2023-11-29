@@ -1,7 +1,7 @@
 <!doctype html><html lang="en">
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-  <title>Rule language for decentralized business processes</title>
+  <title>Langage de règles pour les processus métiers décentralisés</title>
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
@@ -12,7 +12,7 @@
  *   - .toc for the Table of Contents (<ol class="toc">)
  *     + <span class="secno"> for the section numbers
  *   - #toc for the Table of Contents (<nav id="toc">)
- *   - ul.index for Indices (<a href="#ref">term</a><span>, in §N.M</span>)
+ *   - ul.index for Indices (<a href="#ref">term</a><span>, in § N.M</span>)
  *   - table.index for Index Tables (e.g. for properties or elements)
  *
  * Structural Markup
@@ -26,6 +26,7 @@
  *   - .figure and .caption (HTML4) and figure and figcaption (HTML5)
  *     -> .sidefigure for right-floated figures
  *   - ins/del
+ *     -> ins/del.c### for candidate and proposed changes (amendments)
  *
  * Code
  *   - pre and code
@@ -34,9 +35,12 @@
  *   - .note       for informative notes             (div, p, span, aside, details)
  *   - .example    for informative examples          (div, p, pre, span)
  *   - .issue      for issues                        (div, p, span)
- *   - .assertion  for assertions                    (div, p, span)
  *   - .advisement for loud normative statements     (div, p, strong)
  *   - .annoying-warning for spec obsoletion notices (div, aside, details)
+ *   - .correction for "candidate corrections"       (div, aside, details, section)
+ *   - .addition   for "candidate additions"         (div, aside, details, section)
+ *   - .correction.proposed for "proposed corrections" (div, aside, details, section)
+ *   - .addition.proposed   for "proposed additions"   (div, aside, details, section)
  *
  * Definition Boxes
  *   - pre.def   for WebIDL definitions
@@ -57,6 +61,8 @@
  *   - .head for the header
  *   - .copyright for the copyright
  *
+ * Outdated warning for old specs
+ *
  * Miscellaneous
  *   - .overlarge for things that should be as wide as possible, even if
  *     that overflows the body text area. This can be used on an item or
@@ -64,22 +70,28 @@
  *     Note that this styling basically doesn't help at all when printing,
  *     since A4 paper isn't much wider than the max-width here.
  *     It's better to design things to fit into a narrower measure if possible.
+ *
  *   - js-added ToC jump links (see fixup.js)
  *
  ******************************************************************************/
 
+/* color variables included separately for reliability */
+
 /******************************************************************************/
-/*                                   Body                                     */
+/*                                    Body                                    */
 /******************************************************************************/
+
+	html {
+	}
 
 	body {
 		counter-reset: example figure issue;
 
 		/* Layout */
-		max-width: 50em;               /* limit line length to 50em for readability   */
-		margin: 0 auto;                /* center text within page                     */
+		max-width: 50em;			  /* limit line length to 50em for readability   */
+		margin: 0 auto;				/* center text within page                    */
 		padding: 1.6em 1.5em 2em 50px; /* assume 16px font size for downlevel clients */
-		padding: 1.6em 1.5em 2em calc(26px + 1.5em); /* leave space for status flag     */
+		padding: 1.6em 1.5em 2em calc(26px + 1.5em); /* leave space for status flag    */
 
 		/* Typography */
 		line-height: 1.5;
@@ -90,9 +102,10 @@
 		overflow-wrap: break-word;
 		hyphens: auto;
 
-		/* Colors */
 		color: black;
+		color: var(--text);
 		background: white top left fixed no-repeat;
+		background: var(--bg) top left fixed no-repeat;
 		background-size: 25px auto;
 	}
 
@@ -103,7 +116,7 @@
 
 /** Header ********************************************************************/
 
-	div.head { margin-bottom: 1em }
+	div.head { margin-bottom: 1em; }
 	div.head hr { border-style: solid; }
 
 	div.head h1 {
@@ -124,10 +137,13 @@
 	.head img[src*="logos/W3C"] {
 		display: block;
 		border: solid #1a5e9a;
+		border: solid var(--logo-bg);
 		border-width: .65rem .7rem .6rem;
 		border-radius: .4rem;
 		background: #1a5e9a;
+		background: var(--logo-bg);
 		color: white;
+		color: var(--logo-text);
 		font-weight: bold;
 	}
 
@@ -138,7 +154,9 @@
 
 	.head a:active > img[src*="logos/W3C"] {
 		background: #c00;
+		background: var(--logo-active-bg);
 		border-color: #c00;
+		border-color: var(--logo-active-bg);
 	}
 
 	/* see also additional rules in Link Styling section */
@@ -146,7 +164,7 @@
 /** Copyright *****************************************************************/
 
 	p.copyright,
-	p.copyright small { font-size: small }
+	p.copyright small { font-size: small; }
 
 /** Back to Top / ToC Toggle **************************************************/
 
@@ -158,14 +176,13 @@
 	@media not print {
 		#toc-nav {
 			position: fixed;
-			z-index: 2;
+			z-index: 3;
 			bottom: 0; left: 0;
 			margin: 0;
 			min-width: 1.33em;
 			border-top-right-radius: 2rem;
 			box-shadow: 0 0 2px;
 			font-size: 1.5em;
-			color: black;
 		}
 		#toc-nav > a {
 			display: block;
@@ -175,23 +192,32 @@
 			padding: .1em 0.3em;
 			margin: 0;
 
-			background: white;
 			box-shadow: 0 0 2px;
 			border: none;
 			border-top-right-radius: 1.33em;
+
+			color: #707070;
+			color: var(--tocnav-normal-text);
 			background: white;
+			background: var(--tocnav-normal-bg);
 		}
+		#toc-nav > a:hover,
+		#toc-nav > a:focus {
+			color: black;
+			color: var(--tocnav-hover-text);
+			background: #f8f8f8;
+			background: var(--tocnav-hover-bg);
+		}
+		#toc-nav > a:active {
+			color: #c00;
+			color: var(--tocnav-active-text);
+			background: white;
+			background: var(--tocnav-active-bg);
+		}
+
 		#toc-nav > #toc-jump {
 			padding-bottom: 2em;
 			margin-bottom: -1.9em;
-		}
-
-		#toc-nav > a:hover,
-		#toc-nav > a:focus {
-			background: #f8f8f8;
-		}
-		#toc-nav > a:not(:hover):not(:focus) {
-			color: #707070;
 		}
 
 		/* statusbar gets in the way on keyboard focus; remove once browsers fix */
@@ -205,26 +231,6 @@
 		}
 		#toc-nav > a > span + span {
 			padding-right: 0.2em;
-		}
-
-		#toc-toggle-inline {
-			vertical-align: 0.05em;
-			font-size: 80%;
-			color: gray;
-			color: hsla(203,20%,40%,.7);
-			border-style: none;
-			background: transparent;
-			position: relative;
-		}
-		#toc-toggle-inline:hover:not(:active),
-		#toc-toggle-inline:focus:not(:active) {
-			text-shadow: 1px 1px silver;
-			top: -1px;
-			left: -1px;
-		}
-
-		#toc-nav :active {
-			color: #C00;
 		}
 	}
 
@@ -243,10 +249,14 @@
 			padding: 0 1em;
 			padding-left: 42px;
 			padding-left: calc(1em + 26px);
+			color: black;
+			color: var(--tocsidebar-text);
 			background: inherit;
 			background-color: #f7f8f9;
+			background-color: var(--tocsidebar-bg);
 			z-index: 1;
 			box-shadow: -.1em 0 .25em rgba(0,0,0,.1) inset;
+			box-shadow: -.1em 0 .25em var(--tocsidebar-shadow) inset;
 		}
 		body.toc-sidebar #toc h2 {
 			margin-top: .8rem;
@@ -256,6 +266,7 @@
 			font-weight: bold;
 			color: gray;
 			color: hsla(203,20%,40%,.7);
+			color: var(--tocsidebar-heading-text);
 		}
 		body.toc-sidebar #toc-jump:not(:focus) {
 			width: 0;
@@ -283,10 +294,14 @@
 			padding: 0 1em;
 			padding-left: 42px;
 			padding-left: calc(1em + 26px);
+			color: black;
+			color: var(--tocsidebar-text);
 			background: inherit;
 			background-color: #f7f8f9;
+			background-color: var(--tocsidebar-bg);
 			z-index: 1;
 			box-shadow: -.1em 0 .25em rgba(0,0,0,.1) inset;
+			box-shadow: -.1em 0 .25em var(--tocsidebar-shadow) inset;
 		}
 		body:not(.toc-inline) #toc h2 {
 			margin-top: .8rem;
@@ -296,6 +311,7 @@
 			font-weight: bold;
 			color: gray;
 			color: hsla(203,20%,40%,.7);
+			color: var(--tocsidebar-heading-text);
 		}
 
 		body:not(.toc-inline) {
@@ -327,9 +343,9 @@
 		page-break-after: avoid;
 		page-break-inside: avoid;
 		font: 100% sans-serif;   /* Reset all font styling to clear out UA styles */
-		font-family: inherit;    /* Inherit the font family. */
-		line-height: 1.2;        /* Keep wrapped headings compact */
-		hyphens: manual;         /* Hyphenated headings look weird */
+		font-family: inherit;	/* Inherit the font family. */
+		line-height: 1.2;		/* Keep wrapped headings compact */
+		hyphens: manual;		/* Hyphenated headings look weird */
 	}
 
 	h2, h3, h4, h5, h6 {
@@ -338,7 +354,7 @@
 
 	h1, h2, h3 {
 		color: #005A9C;
-		background: transparent;
+		color: var(--heading-text);
 	}
 
 	h1 { font-size: 170%; }
@@ -352,8 +368,8 @@
 /** Subheadings ***************************************************************/
 
 	h1 + h2,
-	#subtitle {
-		/* #subtitle is a subtitle in an H2 under the H1 */
+	#profile-and-date {
+		/* #profile-and-date is a subtitle in an H2 under the H1 */
 		margin-top: 0;
 	}
 	h2 + h3,
@@ -365,11 +381,13 @@
 
 /** Section divider ***********************************************************/
 
-	:not(.head) > hr {
+	:not(.head) > :not(.head) + hr {
 		font-size: 1.5em;
 		text-align: center;
 		margin: 1em auto;
 		height: auto;
+		color: black;
+		color: var(--hr-text);
 		border: transparent solid 0;
 		background: transparent;
 	}
@@ -411,48 +429,51 @@
 	/* Style for algorithms */
 	ol.algorithm ol:not(.algorithm),
 	.algorithm > ol ol:not(.algorithm) {
-	 border-left: 0.5em solid #DEF;
+	border-left: 0.5em solid #DEF;
+	border-left: 0.5em solid var(--algo-border);
 	}
 
 	/* Put nice boxes around each algorithm. */
 	[data-algorithm]:not(.heading) {
-	  padding: .5em;
-	  border: thin solid #ddd; border-radius: .5em;
-	  margin: .5em calc(-0.5em - 1px);
+	 padding: .5em;
+	 border: thin solid #ddd;
+	 border: thin solid var(--algo-border);
+	 border-radius: .5em;
+	 margin: .5em calc(-0.5em - 1px);
 	}
 	[data-algorithm]:not(.heading) > :first-child {
-	  margin-top: 0;
+	 margin-top: 0;
 	}
 	[data-algorithm]:not(.heading) > :last-child {
-	  margin-bottom: 0;
+	 margin-bottom: 0;
 	}
 
 	/* Style for switch/case <dl>s */
 	dl.switch > dd > ol.only,
 	dl.switch > dd > .only > ol {
-	 margin-left: 0;
+	margin-left: 0;
 	}
 	dl.switch > dd > ol.algorithm,
 	dl.switch > dd > .algorithm > ol {
-	 margin-left: -2em;
+	margin-left: -2em;
 	}
 	dl.switch {
-	 padding-left: 2em;
+	padding-left: 2em;
 	}
 	dl.switch > dt {
-	 text-indent: -1.5em;
-	 margin-top: 1em;
+	text-indent: -1.5em;
+	margin-top: 1em;
 	}
 	dl.switch > dt + dt {
-	 margin-top: 0;
+	margin-top: 0;
 	}
 	dl.switch > dt::before {
-	 content: '\21AA';
-	 padding: 0 0.5em 0 0;
-	 display: inline-block;
-	 width: 1em;
-	 text-align: right;
-	 line-height: 0.5em;
+	content: '\21AA';
+	padding: 0 0.5em 0 0;
+	display: inline-block;
+	width: 1em;
+	text-align: right;
+	line-height: 0.5em;
 	}
 
 /** Terminology Markup ********************************************************/
@@ -470,7 +491,7 @@
 		font-style: normal;
 	}
 	dt dfn code, code.idl {
-		font-size: medium;
+		font-size: inherit;
 	}
 	dfn var {
 		font-style: normal;
@@ -478,8 +499,39 @@
 
 /** Change Marking ************************************************************/
 
-	del { color: red;  text-decoration: line-through; }
-	ins { color: #080; text-decoration: underline;    }
+	del {
+		color: #aa0000;
+		color: var(--del-text);
+		background: transparent;
+		background: var(--del-bg);
+		text-decoration: line-through;
+	}
+	ins {
+		color: #006100;
+		color: var(--ins-text);
+		background: transparent;
+		background: var(--ins-bg);
+		text-decoration: underline;
+	}
+
+	/* for amendments (candidate/proposed changes) */
+
+	.amendment ins, .correction ins, .addition ins,
+	ins[class^=c] {
+		text-decoration-style: dotted;
+	}
+	.amendment del, .correction del, .addition del,
+	del[class^=c] {
+		text-decoration-style: dotted;
+	}
+	.amendment.proposed ins, .correction.proposed ins, .addition.proposed ins,
+	ins[class^=c].proposed {
+		text-decoration-style: double;
+	}
+	.amendment.proposed del, .correction.proposed del, .addition.proposed del,
+	del[class^=c].proposed {
+		text-decoration-style: double;
+	}
 
 /** Miscellaneous improvements to inline formatting ***************************/
 
@@ -497,9 +549,14 @@
 	pre, code, samp {
 		font-family: Menlo, Consolas, "DejaVu Sans Mono", Monaco, monospace;
 		font-size: .9em;
-		page-break-inside: avoid;
 		hyphens: none;
 		text-transform: none;
+		text-align: left;
+		text-align: start;
+		font-variant: normal;
+		orphans: 3;
+		widows: 3;
+		page-break-before: avoid;
 	}
 	pre code,
 	code code {
@@ -514,7 +571,7 @@
 
 /** Inline Code fragments *****************************************************/
 
-  /* Do something nice. */
+	/* Do something nice. */
 
 /******************************************************************************/
 /*                                    Links                                   */
@@ -525,27 +582,28 @@
 	/* We hyperlink a lot, so make it less intrusive */
 	a[href] {
 		color: #034575;
-		text-decoration: none;
-		border-bottom: 1px solid #707070;
-		/* Need a bit of extending for it to look okay */
-		padding: 0 1px 0;
-		margin: 0 -1px 0;
+		color: var(--a-normal-text);
+		text-decoration: underline #707070;
+		text-decoration: underline var(--a-normal-underline);
+		text-decoration-skip-ink: none;
 	}
 	a:visited {
-		border-bottom-color: #BBB;
+		color: #034575;
+		color: var(--a-visited-text);
+		text-decoration-color: #bbb;
+		text-decoration-color: var(--a-visited-underline);
 	}
 
-	/* Use distinguishing colors when user is interacting with the link */
+	/* Indicate interaction with the link */
 	a[href]:focus,
 	a[href]:hover {
-		background: #f8f8f8;
-		background: rgba(75%, 75%, 75%, .25);
-		border-bottom-width: 3px;
-		margin-bottom: -2px;
+		text-decoration-thickness: 2px;
 	}
 	a[href]:active {
-		color: #C00;
-		border-color: #C00;
+		color: #c00;
+		color: var(--a-active-text);
+		text-decoration-color: #c00;
+		text-decoration-color: var(--a-active-underline);
 	}
 
 	/* Backout above styling for W3C logo */
@@ -564,8 +622,13 @@
 		border-style: none;
 	}
 
+	img, svg {
+		/* Intentionally not color-scheme aware. */
+		background: white;
+	}
+
 	/* For autogen numbers, add
-	   .caption::before, figcaption::before { content: "Figure " counter(figure) ". "; }
+	  .caption::before, figcaption::before { content: "Figure " counter(figure) ". "; }
 	*/
 
 	figure, .figure, .sidefigure {
@@ -573,10 +636,11 @@
 		text-align: center;
 		margin: 2.5em 0;
 	}
-	.figure img,    .sidefigure img,    figure img,
+	.figure img,	.sidefigure img,	figure img,
 	.figure object, .sidefigure object, figure object {
 		max-width: 100%;
 		margin: auto;
+		height: auto;
 	}
 	.figure pre, .sidefigure pre, figure pre {
 		text-align: left;
@@ -590,7 +654,7 @@
 		.sidefigure {
 			float: right;
 			width: 50%;
-			margin: 0 0 0.5em 0.5em
+			margin: 0 0 0.5em 0.5em;
 		}
 	}
 	.caption, figcaption, caption {
@@ -605,13 +669,15 @@
 	}
 
 	/* DL list is indented 2em, but figure inside it is not */
-	dd > .figure, dd > figure { margin-left: -2em }
+	dd > .figure, dd > figure { margin-left: -2em; }
 
 /******************************************************************************/
 /*                             Colored Boxes                                  */
 /******************************************************************************/
 
-	.issue, .note, .example, .assertion, .advisement, blockquote {
+	.issue, .note, .example, .assertion, .advisement, blockquote,
+	.amendment, .correction, .addition {
+		margin: 1em auto;
 		padding: .5em;
 		border: .5em;
 		border-left-style: solid;
@@ -622,88 +688,117 @@
 		border-right-style: solid;
 	}
 
-	.issue,
-	.note,
-	.example,
-	.advisement,
-	.assertion,
-	blockquote {
-		margin: 1em auto;
-	}
+	blockquote > :first-child,
 	.note  > p:first-child,
 	.issue > p:first-child,
-	blockquote > :first-child {
+	.amendment > p:first-child,
+	.correction > p:first-child,
+	.addition > p:first-child {
 		margin-top: 0;
 	}
-	blockquote > :last-child {
+	blockquote > :last-child,
+	.note  > p:last-child,
+	.issue > p:last-child,
+	.amendment > p:last-child,
+	.correction > p:last-child,
+	.addition > p:last-child {
 		margin-bottom: 0;
+	}
+
+
+	.issue::before, .issue > .marker,
+	.example::before, .example > .marker,
+	.note::before, .note > .marker,
+	details.note > summary > .marker,
+	.amendment::before, .amendment > .marker,
+	details.amendment > summary > .marker,
+	.addition::before, .addition > .marker,
+	addition.amendment > summary > .marker,
+	.correction::before, .correction > .marker,
+	correction.amendment > summary > .marker
+	{
+		text-transform: uppercase;
+		padding-right: 1em;
+	}
+
+	.example::before, .example > .marker {
+		display: block;
+		padding-right: 0em;
 	}
 
 /** Blockquotes ***************************************************************/
 
 	blockquote {
 		border-color: silver;
+		border-color: var(--blockquote-border);
+		background: transparent;
+		background: var(--blockquote-bg);
+		color: currentcolor;
+		color: var(--blockquote-text);
 	}
 
 /** Open issue ****************************************************************/
 
 	.issue {
-		border-color: #E05252;
-		background: #FBE9E9;
+		border-color: #e05252;
+		border-color: var(--issue-border);
+		background: #fbe9e9;
+		background: var(--issue-bg);
+		color: black;
+		color: var(--issue-text);
 		counter-increment: issue;
 		overflow: auto;
 	}
 	.issue::before, .issue > .marker {
-		text-transform: uppercase;
-		color: #AE1E1E;
-		padding-right: 1em;
-		text-transform: uppercase;
+		color: #831616;
+		color: var(--issueheading-text);
 	}
 	/* Add .issue::before { content: "Issue " counter(issue) " "; } for autogen numbers,
-	   or use class="marker" to mark up the issue number in source. */
+	  or use class="marker" to mark up the issue number in source. */
 
 /** Example *******************************************************************/
 
 	.example {
-		border-color: #E0CB52;
-		background: #FCFAEE;
+		border-color: #e0cb52;
+		border-color: var(--example-border);
+		background: #fcfaee;
+		background: var(--example-bg);
+		color: black;
+		color: var(--example-text);
 		counter-increment: example;
 		overflow: auto;
 		clear: both;
 	}
 	.example::before, .example > .marker {
-		text-transform: uppercase;
-		color: #827017;
-		min-width: 7.5em;
-		display: block;
+		color: #574b0f;
+		color: var(--exampleheading-text);
 	}
 	/* Add .example::before { content: "Example " counter(example) " "; } for autogen numbers,
-	   or use class="marker" to mark up the example number in source. */
+	  or use class="marker" to mark up the example number in source. */
 
 /** Non-normative Note ********************************************************/
 
 	.note {
-		border-color: #52E052;
-		background: #E9FBE9;
+		border-color: #52e052;
+		border-color: var(--note-border);
+		background: #e9fbe9;
+		background: var(--note-bg);
+		color: black;
+		color: var(--note-text);
 		overflow: auto;
 	}
 
 	.note::before, .note > .marker,
-	details.note > summary::before,
-	details.note > summary > .marker {
-		text-transform: uppercase;
-		display: block;
-		color: hsl(120, 70%, 30%);
-	}
-	/* Add .note::before { content: "Note"; } for autogen label,
-	   or use class="marker" to mark up the label in source. */
-
 	details.note > summary {
-		display: block;
 		color: hsl(120, 70%, 30%);
+		color: var(--noteheading-text);
 	}
+	/* Add .note::before { content: "Note "; } for autogen label,
+	  or use class="marker" to mark up the label in source. */
+
 	details.note[open] > summary {
 		border-bottom: 1px silver solid;
+		border-bottom: 1px var(--notesummary-underline) solid;
 	}
 
 /** Assertion Box *************************************************************/
@@ -711,7 +806,11 @@
 
 	.assertion {
 		border-color: #AAA;
+		border-color: var(--assertion-border);
 		background: #EEE;
+		background: var(--assertion-bg);
+		color: black;
+		color: var(--assertion-text);
 	}
 
 /** Advisement Box ************************************************************/
@@ -719,15 +818,52 @@
 
 	.advisement {
 		border-color: orange;
+		border-color: var(--advisement-border);
 		border-style: none solid;
-		background: #FFEECC;
+		background: #fec;
+		background: var(--advisement-bg);
+		color: black;
+		color: var(--advisement-text);
 	}
 	strong.advisement {
 		display: block;
 		text-align: center;
 	}
-	.advisement > .marker {
-		color: #B35F00;
+	.advisement::before, .advisement > .marker {
+		color: #b35f00;
+		color: var(--advisementheading-text);
+	}
+
+/** Amendment Box *************************************************************/
+
+	.amendment, .correction, .addition {
+		border-color: #330099;
+		border-color: var(--amendment-border);
+		background: #F5F0FF;
+		background: var(--amendment-bg);
+		color: black;
+		color: var(--amendment-text);
+	}
+	.amendment.proposed, .correction.proposed, .addition.proposed {
+		border-style: solid;
+		border-block-width: 0.25em;
+	}
+	.amendment::before, .amendment > .marker,
+	details.amendment > summary::before, details.amendment > summary > .marker,
+	.correction::before, .correction > .marker,
+	details.correction > summary::before, details.correction > summary > .marker,
+	.addition::before, .addition > .marker,
+	details.addition > summary::before, details.addition > summary > .marker {
+		color: #220066;
+		color: var(--amendmentheading-text);
+	}
+	.amendment.proposed::before, .amendment.proposed > .marker,
+	details.amendment.proposed > summary::before, details.amendment.proposed > summary > .marker,
+	.correction.proposed::before, .correction.proposed > .marker,
+	details.correction.proposed > summary::before, details.correction.proposed > summary > .marker,
+	.addition.proposed::before, .addition.proposed > .marker,
+	details.addition.proposed > summary::before, details.addition.proposed > summary > .marker {
+		font-weight: bold;
 	}
 
 /** Spec Obsoletion Notice ****************************************************/
@@ -743,13 +879,16 @@
 	.annoying-warning:not(details),
 	details.annoying-warning:not([open]) > summary,
 	details.annoying-warning[open] {
-		background: #fdd;
-		color: red;
-		font-weight: bold;
+		background: hsla(40,100%,50%,0.95);
+		background: var(--warning-bg);
+		color: black;
+		color: var(--warning-text);
 		padding: .75em 1em;
-		border: thick red;
-		border-style: solid;
-		border-radius: 1em;
+		border: red;
+		border: var(--warning-border);
+		border-style: solid none;
+		box-shadow: 0 2px 8px black;
+		text-align: center;
 	}
 	.annoying-warning :last-child {
 		margin-bottom: 0;
@@ -758,9 +897,9 @@
 @media not print {
 	details.annoying-warning[open] {
 		position: fixed;
-		left: 1em;
-		right: 1em;
-		bottom: 1em;
+		left: 0;
+		right: 0;
+		bottom: 2em;
 		z-index: 1000;
 	}
 }
@@ -773,9 +912,13 @@
 
 	.def {
 		padding: .5em 1em;
-		background: #DEF;
+		background: #def;
+		background: var(--def-bg);
 		margin: 1.2em 0;
-		border-left: 0.5em solid #8CCBF2;
+		border-left: 0.5em solid #8ccbf2;
+		border-left: 0.5em solid var(--def-border);
+		color: black;
+		color: var(--def-text);
 	}
 
 /******************************************************************************/
@@ -800,6 +943,7 @@
 		padding: 0.5em;
 		vertical-align: baseline;
 		border-bottom: 1px solid #bbd7e9;
+		border-bottom: 1px solid var(--defrow-border);
 	}
 
 	table.def > tbody > tr:last-child th,
@@ -820,10 +964,10 @@
 	}
 
 	/* A footnote at the bottom of a def table */
-	table.def           td.footnote {
+	table.def td.footnote {
 		padding-top: 0.6em;
 	}
-	table.def           td.footnote::before {
+	table.def td.footnote::before {
 		content: " ";
 		display: block;
 		height: 0.6em;
@@ -833,15 +977,15 @@
 
 /** Data tables (and properly marked-up index tables) *************************/
 	/*
-		 <table class="data"> highlights structural relationships in a table
-		 when correct markup is used (e.g. thead/tbody, th vs. td, scope attribute)
+		<table class="data"> highlights structural relationships in a table
+		when correct markup is used (e.g. thead/tbody, th vs. td, scope attribute)
 
-		 Use class="complex data" for particularly complicated tables --
-		 (This will draw more lines: busier, but clearer.)
+		Use class="complex data" for particularly complicated tables --
+		(This will draw more lines: busier, but clearer.)
 
-		 Use class="long" on table cells with paragraph-like contents
-		 (This will adjust text alignment accordingly.)
-		 Alternately use class="longlastcol" on tables, to have the last column assume "long".
+		Use class="long" on table cells with paragraph-like contents
+		(This will adjust text alignment accordingly.)
+		Alternately use class="longlastcol" on tables, to have the last column assume "long".
 	*/
 
 	table {
@@ -868,6 +1012,7 @@
 		padding: 0.5em 1em;
 		border-width: 1px;
 		border-color: silver;
+		border-color: var(--datacell-border);
 		border-top-style: solid;
 	}
 
@@ -892,6 +1037,7 @@
 	table.index tbody th:first-child  {
 		border-right: 2px solid;
 		border-top: 1px solid silver;
+		border-top: 1px solid var(--datacell-border);
 		padding-right: 1em;
 	}
 
@@ -903,13 +1049,14 @@
 	table.complex.data th,
 	table.complex.data td {
 		border: 1px solid silver;
+		border: 1px solid var(--datacell-border);
 		text-align: center;
 	}
 
 	table.data.longlastcol td:last-child,
 	table.data td.long {
-	 vertical-align: baseline;
-	 text-align: left;
+		vertical-align: baseline;
+		text-align: left;
 	}
 
 	table.data img {
@@ -962,17 +1109,30 @@ Possible extra rowspan handling
 
 	.toc a {
 		/* More spacing; use padding to make it part of the click target. */
-		padding-top: 0.1rem;
+		padding: 0.1rem 1px 0;
 		/* Larger, more consistently-sized click target */
 		display: block;
+		/* Switch to using border-bottom for underlines */
+		text-decoration: none;
+		border-bottom: 1px solid;
 		/* Reverse color scheme */
 		color: black;
-		border-color: #3980B5;
-		border-bottom-width: 3px !important;
-		margin-bottom: 0px !important;
+		color: var(--toclink-text);
+		border-color: #3980b5;
+		border-color: var(--toclink-underline);
 	}
 	.toc a:visited {
+		color: black;
+		color: var(--toclink-visited-text);
 		border-color: #054572;
+		border-color: var(--toclink-visited-underline);
+	}
+	.toc a:focus,
+	.toc a:hover {
+		background: rgba(75%, 75%, 75%, .25);
+		background: var(--a-hover-bg);
+		border-bottom-width: 3px;
+		margin-bottom: -2px;
 	}
 	.toc a:not(:focus):not(:hover) {
 		/* Allow colors to cascade through from link styling */
@@ -984,22 +1144,22 @@ Possible extra rowspan handling
 		/* because generated content isn't search/selectable and markers can't do multilevel yet */
 		margin:  0;
 		padding: 0;
-		line-height: 1.1rem; /* consistent spacing */
+	}
+	.toc {
+		line-height: 1.1em;
 	}
 
 	/* ToC not indented until third level, but font style & margins show hierarchy */
-	.toc > li             { font-weight: bold;   }
-	.toc > li li          { font-weight: normal; }
-	.toc > li li li       { font-size:   95%;    }
-	.toc > li li li li    { font-size:   90%;    }
-	.toc > li li li li .secno { font-size: 85%; }
-	.toc > li li li li li { font-size:   85%;    }
-	.toc > li li li li li .secno { font-size: 100%; }
+	.toc > li			{ font-weight: bold;   }
+	.toc > li li		 { font-weight: normal; }
+	.toc > li li li	  { font-size:   95%;	}
+	.toc > li li li li	{ font-size:   90%;	}
+	.toc > li li li li li { font-size:   85%;	}
 
 	/* @supports not (display:grid) { */
-		.toc > li             { margin: 1.5rem 0;    }
-		.toc > li li          { margin: 0.3rem 0;    }
-		.toc > li li li       { margin-left: 2rem;   }
+		.toc > li			{ margin: 1.5rem 0;	}
+		.toc > li li		 { margin: 0.3rem 0;	}
+		.toc > li li li	  { margin-left: 2rem;   }
 
 		/* Section numbers in a column of their own */
 		.toc .secno {
@@ -1007,26 +1167,37 @@ Possible extra rowspan handling
 			width: 4rem;
 			white-space: nowrap;
 		}
+		.toc > li li li li .secno { font-size: 85%; }
+		.toc > li li li li li .secno { font-size: 100%; }
 
 		.toc li {
 			clear: both;
 		}
 
-		:not(li) > .toc              { margin-left:  5rem; }
-		.toc .secno                  { margin-left: -5rem; }
-		.toc > li li li .secno       { margin-left: -7rem; }
-		.toc > li li li li .secno    { margin-left: -9rem; }
+		:not(li) > .toc			 { margin-left:  5rem; }
+		.toc .secno				 { margin-left: -5rem; }
+		.toc > li li li .secno	  { margin-left: -7rem; }
+		.toc > li li li li .secno	{ margin-left: -9rem; }
 		.toc > li li li li li .secno { margin-left: -11rem; }
 
 		/* Tighten up indentation in narrow ToCs */
 		@media (max-width: 30em) {
-			:not(li) > .toc              { margin-left:  4rem; }
-			.toc .secno                  { margin-left: -4rem; }
-			.toc > li li li              { margin-left:  1rem; }
-			.toc > li li li .secno       { margin-left: -5rem; }
-			.toc > li li li li .secno    { margin-left: -6rem; }
+			:not(li) > .toc			 { margin-left:  4rem; }
+			.toc .secno				 { margin-left: -4rem; }
+			.toc > li li li			 { margin-left:  1rem; }
+			.toc > li li li .secno	  { margin-left: -5rem; }
+			.toc > li li li li .secno	{ margin-left: -6rem; }
 			.toc > li li li li li .secno { margin-left: -7rem; }
 		}
+		/* Loosen it on wide screens */
+		@media screen and (min-width: 78em) {
+			body:not(.toc-inline) :not(li) > .toc			 { margin-left:  4rem; }
+			body:not(.toc-inline) .toc .secno				 { margin-left: -4rem; }
+			body:not(.toc-inline) .toc > li li li			 { margin-left:  1rem; }
+			body:not(.toc-inline) .toc > li li li .secno	  { margin-left: -5rem; }
+			body:not(.toc-inline) .toc > li li li li .secno	{ margin-left: -6rem; }
+			body:not(.toc-inline) .toc > li li li li li .secno { margin-left: -7rem; }
+	}
 	/* } */
 
 	@supports (display:grid) and (display:contents) {
@@ -1055,7 +1226,7 @@ Possible extra rowspan handling
 		}
 		#toc > .toc > li > a > span {
 			/* The spans of the top-level list,
-			   comprising the first items of each top-level section. */
+			  comprising the first items of each top-level section. */
 			margin-top: 1.1rem;
 		}
 		#toc#toc .secno { /* Ugh, need more specificity to override base.css */
@@ -1068,9 +1239,12 @@ Possible extra rowspan handling
 			width: auto;
 			margin-right: 1rem;
 		}
-		#toc .content:hover {
+		#toc .content:hover,
+		#toc .content:focus {
 			background: rgba(75%, 75%, 75%, .25);
+			background: var(--a-hover-bg);
 			border-bottom: 3px solid #054572;
+			border-bottom: 3px solid var(--toclink-underline);
 			margin-bottom: -3px;
 		}
 		#toc li li li .content {
@@ -1085,22 +1259,23 @@ Possible extra rowspan handling
 /** Index *********************************************************************/
 
 	/* Index Lists: Layout */
-	ul.index       { margin-left: 0; columns: 15em; text-indent: 1em hanging; }
-	ul.index li    { margin-left: 0; list-style: none; break-inside: avoid; }
-	ul.index li li { margin-left: 1em }
-	ul.index dl    { margin-top: 0; }
-	ul.index dt    { margin: .2em 0 .2em 20px;}
-	ul.index dd    { margin: .2em 0 .2em 40px;}
+	ul.index	  { margin-left: 0; columns: 15em; text-indent: 1em hanging; }
+	ul.index li	{ margin-left: 0; list-style: none; break-inside: avoid; }
+	ul.index li li { margin-left: 1em; }
+	ul.index dl	{ margin-top: 0; }
+	ul.index dt	{ margin: .2em 0 .2em 20px;}
+	ul.index dd	{ margin: .2em 0 .2em 40px;}
 	/* Index Lists: Typography */
 	ul.index ul,
 	ul.index dl { font-size: smaller; }
 	@media not print {
-		ul.index li span {
+		ul.index li a + span {
 			white-space: nowrap;
 			color: transparent; }
 		ul.index li a:hover + span,
 		ul.index li a:focus + span {
 			color: #707070;
+			color: var(--indexinfo-text);
 		}
 	}
 
@@ -1122,13 +1297,101 @@ Possible extra rowspan handling
 
 	table.index tr:hover td:not([rowspan]),
 	table.index tr:hover th:not([rowspan]) {
+		color: black;
+		color: var(--indextable-hover-text);
 		background: #f7f8f9;
+		background: var(--indextable-hover-bg);
 	}
 
 	/* The link in the first column in the property table (formerly a TD) */
 	table.index th:first-child a {
 		font-weight: bold;
 	}
+
+/** Outdated warning **********************************************************/
+
+.outdated-spec {
+	color: black;
+	color: var(--outdatedspec-text);
+	background-color: rgba(0,0,0,0.5);
+	background-color: var(--outdatedspec-bg);
+}
+
+.outdated-warning {
+	position: fixed;
+	bottom: 50%;
+	left: 0;
+	right: 0;
+	margin: 0 auto;
+	width: 50%;
+	background: maroon;
+	background: var(--outdated-bg);
+	color: white;
+	color: var(--outdated-text);
+	border-radius: 1em;
+	box-shadow: 0 0 1em red;
+	box-shadow: 0 0 1em var(--outdated-shadow);
+	padding: 2em;
+	text-align: center;
+	z-index: 2;
+}
+
+.outdated-warning a {
+	color: currentcolor;
+	background: transparent;
+}
+
+.edited-rec-warning {
+	background: darkorange;
+	background: var(--editedrec-bg);
+	box-shadow: 0 0 1em;
+}
+
+.outdated-warning button {
+	color: var(--outdated-text);
+	border-radius: 1em;
+	box-shadow: 0 0 1em red;
+	box-shadow: 0 0 1em var(--outdated-shadow);
+	padding: 2em;
+	text-align: center;
+	z-index: 2;
+}
+
+.outdated-warning a {
+	color: currentcolor;
+	background: transparent;
+}
+
+.edited-rec-warning {
+	background: darkorange;
+	background: var(--editedrec-bg);
+	box-shadow: 0 0 1em;
+}
+
+.outdated-warning button {
+	position: absolute;
+	top: 0;
+	right:0;
+	margin: 0;
+	border: 0;
+	padding: 0.25em 0.5em;
+	background: transparent;
+	color: white;
+	color: var(--outdated-text);
+	font:1em sans-serif;
+	text-align:center;
+}
+
+.outdated-warning span {
+	display: block;
+}
+
+.outdated-collapsed {
+	bottom: 0;
+	border-radius: 0;
+	width: 100%;
+	padding: 0;
+}
 
 /******************************************************************************/
 /*                                    Print                                   */
@@ -1143,17 +1406,20 @@ Possible extra rowspan handling
 		body {
 			font-family: serif;
 		}
+
+		.outdated-warning {
+			position: absolute;
+			border-style: solid;
+			border-color: red;
+		}
+
+		.outdated-warning input {
+			display: none;
+		}
 	}
 	@page {
 		margin: 1.5cm 1.1cm;
 	}
-
-/******************************************************************************/
-/*                                    Legacy                                  */
-/******************************************************************************/
-
-	/* This rule is inherited from past style sheets. No idea what it's for. */
-	.hide { display: none }
 
 
 
@@ -1168,13 +1434,13 @@ Possible extra rowspan handling
 		margin-right: auto;
 	}
 	.overlarge {
-		/* Magic to create good table positioning:
-		   "content column" is 50ems wide at max; less on smaller screens.
-		   Extra space (after ToC + content) is empty on the right.
+		/* Magic to create good item positioning:
+		  "content column" is 50ems wide at max; less on smaller screens.
+		  Extra space (after ToC + content) is empty on the right.
 
-		   1. When table < content column, centers table in column.
-		   2. When content < table < available, left-aligns.
-		   3. When table > available, fills available + scroll bar.
+		  1. When item < content column, centers item in column.
+		  2. When content < item < available, left-aligns.
+		  3. When item > available, fills available + scroll bar.
 		*/
 		display: grid;
 		grid-template-columns: minmax(0, 50em);
@@ -1209,21 +1475,21 @@ Possible extra rowspan handling
 		.overlarge {
 			overflow-x: auto;
 			/* See Lea Verou's explanation background-attachment:
-			 * http://lea.verou.me/2012/04/background-attachment-local/
-			 *
+			* http://lea.verou.me/2012/04/background-attachment-local/
+			*
 			background: top left  / 4em 100% linear-gradient(to right,  #ffffff, rgba(255, 255, 255, 0)) local,
-			            top right / 4em 100% linear-gradient(to left, #ffffff, rgba(255, 255, 255, 0)) local,
-			            top left  / 1em 100% linear-gradient(to right,  #c3c3c5, rgba(195, 195, 197, 0)) scroll,
-			            top right / 1em 100% linear-gradient(to left, #c3c3c5, rgba(195, 195, 197, 0)) scroll,
-			            white;
+						top right / 4em 100% linear-gradient(to left, #ffffff, rgba(255, 255, 255, 0)) local,
+						top left  / 1em 100% linear-gradient(to right,  #c3c3c5, rgba(195, 195, 197, 0)) scroll,
+						top right / 1em 100% linear-gradient(to left, #c3c3c5, rgba(195, 195, 197, 0)) scroll,
+						white;
 			background-repeat: no-repeat;
 			*/
 		}
 	}
 </style>
-  <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
+  <meta content="Bikeshed version d9bd89757, updated Thu Mar 23 10:06:53 2023 -0700" name="generator">
   <link href="https://mellonscholarlycommunication.github.io/spec-rulelanguage" rel="canonical">
-  <meta content="8464b907fdaa768e01b01e2dee0f20e6a8532182" name="document-revision">
+  <meta content="86e09e29e527ec49b00b96ad79ef40e68f320367" name="document-revision">
 <style>
 table {
   margin: 25px auto;
@@ -1252,9 +1518,8 @@ table th.last {
 }
 </style>
 <style>/* style-autolinks */
-
 .css.css, .property.property, .descriptor.descriptor {
-    color: #005a9c;
+    color: var(--a-normal-text);
     font-size: inherit;
     font-family: inherit;
 }
@@ -1312,9 +1577,119 @@ pre .property::before, pre .property::after {
 
 [data-link-type=biblio] {
     white-space: pre;
-}</style>
-<style>/* style-counters */
+}
+</style>
+<style>/* style-colors */
 
+/* Any --*-text not paired with a --*-bg is assumed to have a transparent bg */
+:root {
+    color-scheme: light dark;
+
+    --text: black;
+    --bg: white;
+
+    --unofficial-watermark: url(https://www.w3.org/StyleSheets/TR/2016/logos/UD-watermark);
+
+    --logo-bg: #1a5e9a;
+    --logo-active-bg: #c00;
+    --logo-text: white;
+
+    --tocnav-normal-text: #707070;
+    --tocnav-normal-bg: var(--bg);
+    --tocnav-hover-text: var(--tocnav-normal-text);
+    --tocnav-hover-bg: #f8f8f8;
+    --tocnav-active-text: #c00;
+    --tocnav-active-bg: var(--tocnav-normal-bg);
+
+    --tocsidebar-text: var(--text);
+    --tocsidebar-bg: #f7f8f9;
+    --tocsidebar-shadow: rgba(0,0,0,.1);
+    --tocsidebar-heading-text: hsla(203,20%,40%,.7);
+
+    --toclink-text: var(--text);
+    --toclink-underline: #3980b5;
+    --toclink-visited-text: var(--toclink-text);
+    --toclink-visited-underline: #054572;
+
+    --heading-text: #005a9c;
+
+    --hr-text: var(--text);
+
+    --algo-border: #def;
+
+    --del-text: red;
+    --del-bg: transparent;
+    --ins-text: #080;
+    --ins-bg: transparent;
+
+    --a-normal-text: #034575;
+    --a-normal-underline: #bbb;
+    --a-visited-text: var(--a-normal-text);
+    --a-visited-underline: #707070;
+    --a-hover-bg: rgba(75%, 75%, 75%, .25);
+    --a-active-text: #c00;
+    --a-active-underline: #c00;
+
+    --blockquote-border: silver;
+    --blockquote-bg: transparent;
+    --blockquote-text: currentcolor;
+
+    --issue-border: #e05252;
+    --issue-bg: #fbe9e9;
+    --issue-text: var(--text);
+    --issueheading-text: #831616;
+
+    --example-border: #e0cb52;
+    --example-bg: #fcfaee;
+    --example-text: var(--text);
+    --exampleheading-text: #574b0f;
+
+    --note-border: #52e052;
+    --note-bg: #e9fbe9;
+    --note-text: var(--text);
+    --noteheading-text: hsl(120, 70%, 30%);
+    --notesummary-underline: silver;
+
+    --assertion-border: #aaa;
+    --assertion-bg: #eee;
+    --assertion-text: black;
+
+    --advisement-border: orange;
+    --advisement-bg: #fec;
+    --advisement-text: var(--text);
+    --advisementheading-text: #b35f00;
+
+    --warning-border: red;
+    --warning-bg: hsla(40,100%,50%,0.95);
+    --warning-text: var(--text);
+
+    --amendment-border: #330099;
+    --amendment-bg: #F5F0FF;
+    --amendment-text: var(--text);
+    --amendmentheading-text: #220066;
+
+    --def-border: #8ccbf2;
+    --def-bg: #def;
+    --def-text: var(--text);
+    --defrow-border: #bbd7e9;
+
+    --datacell-border: silver;
+
+    --indexinfo-text: #707070;
+
+    --indextable-hover-text: black;
+    --indextable-hover-bg: #f7f8f9;
+
+    --outdatedspec-bg: rgba(0, 0, 0, .5);
+    --outdatedspec-text: black;
+    --outdated-bg: maroon;
+    --outdated-text: white;
+    --outdated-shadow: red;
+
+    --editedrec-bg: darkorange;
+}
+</style>
+<style>/* style-counters */
 body {
     counter-reset: example figure issue;
 }
@@ -1341,9 +1716,18 @@ figcaption {
 }
 figcaption:not(.no-marker)::before {
     content: "Figure " counter(figure) " ";
-}</style>
+}
+</style>
+<style>/* style-issues */
+a[href].issue-return {
+    float: right;
+    float: inline-end;
+    color: var(--issueheading-text);
+    font-weight: bold;
+    text-decoration: none;
+}
+</style>
 <style>/* style-md-lists */
-
 /* This is a weird hack for me not yet following the commonmark spec
    regarding paragraph and lists. */
 [data-md] > :first-child {
@@ -1351,9 +1735,15 @@ figcaption:not(.no-marker)::before {
 }
 [data-md] > :last-child {
     margin-bottom: 0;
-}</style>
+}
+</style>
 <style>/* style-selflinks */
 
+:root {
+    --selflink-text: white;
+    --selflink-bg: gray;
+    --selflink-hover-text: black;
+}
 .heading, .issue, .note, .example, li, dt {
     position: relative;
 }
@@ -1374,6 +1764,14 @@ a.self-link:hover {
 .heading > a.self-link {
     font-size: 83%;
 }
+.example > a.self-link,
+.note > a.self-link,
+.issue > a.self-link {
+    /* These blocks are overflow:auto, so positioning outside
+       doesn't work. */
+    left: auto;
+    right: 0;
+}
 li > a.self-link {
     left: calc(-1 * (3.5rem - 26px) - 2em);
 }
@@ -1383,8 +1781,8 @@ dfn > a.self-link {
     opacity: 0;
     width: 1.5em;
     height: 1.5em;
-    background: gray;
-    color: white;
+    background: var(--selflink-bg);
+    color: var(--selflink-text);
     font-style: normal;
     transition: opacity .2s, background-color .2s, color .2s;
 }
@@ -1392,35 +1790,157 @@ dfn:hover > a.self-link {
     opacity: 1;
 }
 dfn > a.self-link:hover {
-    color: black;
+    color: var(--selflink-hover-text);
 }
 
 a.self-link::before            { content: "¶"; }
 .heading > a.self-link::before { content: "§"; }
-dfn > a.self-link::before      { content: "#"; }</style>
+dfn > a.self-link::before      { content: "#"; }
+</style>
+<style>/* style-darkmode */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text: #ddd;
+        --bg: black;
+
+        --unofficial-watermark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cg fill='%23100808' transform='translate(200 200) rotate(-45) translate(-200 -200)' stroke='%23100808' stroke-width='3'%3E%3Ctext x='50%25' y='220' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EUNOFFICIAL%3C/text%3E%3Ctext x='50%25' y='305' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EDRAFT%3C/text%3E%3C/g%3E%3C/svg%3E");
+
+        --logo-bg: #1a5e9a;
+        --logo-active-bg: #c00;
+        --logo-text: white;
+
+        --tocnav-normal-text: #999;
+        --tocnav-normal-bg: var(--bg);
+        --tocnav-hover-text: var(--tocnav-normal-text);
+        --tocnav-hover-bg: #080808;
+        --tocnav-active-text: #f44;
+        --tocnav-active-bg: var(--tocnav-normal-bg);
+
+        --tocsidebar-text: var(--text);
+        --tocsidebar-bg: #080808;
+        --tocsidebar-shadow: rgba(255,255,255,.1);
+        --tocsidebar-heading-text: hsla(203,20%,40%,.7);
+
+        --toclink-text: var(--text);
+        --toclink-underline: #6af;
+        --toclink-visited-text: var(--toclink-text);
+        --toclink-visited-underline: #054572;
+
+        --heading-text: #8af;
+
+        --hr-text: var(--text);
+
+        --algo-border: #456;
+
+        --del-text: #f44;
+        --del-bg: transparent;
+        --ins-text: #4a4;
+        --ins-bg: transparent;
+
+        --a-normal-text: #6af;
+        --a-normal-underline: #555;
+        --a-visited-text: var(--a-normal-text);
+        --a-visited-underline: var(--a-normal-underline);
+        --a-hover-bg: rgba(25%, 25%, 25%, .2);
+        --a-active-text: #f44;
+        --a-active-underline: var(--a-active-text);
+
+        --borderedblock-bg: rgba(255, 255, 255, .05);
+
+        --blockquote-border: silver;
+        --blockquote-bg: var(--borderedblock-bg);
+        --blockquote-text: currentcolor;
+
+        --issue-border: #e05252;
+        --issue-bg: var(--borderedblock-bg);
+        --issue-text: var(--text);
+        --issueheading-text: hsl(0deg, 70%, 70%);
+
+        --example-border: hsl(50deg, 90%, 60%);
+        --example-bg: var(--borderedblock-bg);
+        --example-text: var(--text);
+        --exampleheading-text: hsl(50deg, 70%, 70%);
+
+        --note-border: hsl(120deg, 100%, 35%);
+        --note-bg: var(--borderedblock-bg);
+        --note-text: var(--text);
+        --noteheading-text: hsl(120, 70%, 70%);
+        --notesummary-underline: silver;
+
+        --assertion-border: #444;
+        --assertion-bg: var(--borderedblock-bg);
+        --assertion-text: var(--text);
+
+        --advisement-border: orange;
+        --advisement-bg: #222218;
+        --advisement-text: var(--text);
+        --advisementheading-text: #f84;
+
+        --warning-border: red;
+        --warning-bg: hsla(40,100%,20%,0.95);
+        --warning-text: var(--text);
+
+        --amendment-border: #330099;
+        --amendment-bg: #080010;
+        --amendment-text: var(--text);
+        --amendmentheading-text: #cc00ff;
+
+        --def-border: #8ccbf2;
+        --def-bg: #080818;
+        --def-text: var(--text);
+        --defrow-border: #136;
+
+        --datacell-border: silver;
+
+        --indexinfo-text: #aaa;
+
+        --indextable-hover-text: var(--text);
+        --indextable-hover-bg: #181818;
+
+        --outdatedspec-bg: rgba(255, 255, 255, .5);
+        --outdatedspec-text: black;
+        --outdated-bg: maroon;
+        --outdated-text: white;
+        --outdated-shadow: red;
+
+        --editedrec-bg: darkorange;
+    }
+    /* In case a transparent-bg image doesn't expect to be on a dark bg,
+       which is quite common in practice... */
+    img { background: white; }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --selflink-text: black;
+        --selflink-bg: silver;
+        --selflink-hover-text: white;
+    }
+}
+</style>
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">Rule language for decentralized business processes</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Working Draft, <time class="dt-updated" datetime="2021-11-24">24 November 2021</time></span></h2>
+   <h1 class="p-name no-ref" id="title">Langage de règles pour les processus métiers décentralisés</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Working Draft, <time class="dt-updated" datetime="2023-11-28">28 November 2023</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
      <dd><a class="u-url" href="https://mellonscholarlycommunication.github.io/spec-rulelanguage">https://mellonscholarlycommunication.github.io/spec-rulelanguage</a>
      <dt>Issue Tracking:
-     <dd><a href="https://github.com/MellonScholarlyCommunication/spec-rulelanguage/issues/">GitHub</a>
+     <dd><a href="https://github.com/Patent2net/spec-rulelanguage/issues/">GitHub</a>
      <dt class="editor">Editors:
-     <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:patrick.hochstenbach@ugent.be">Patrick Hochstenbach</a> (<span class="p-org org"><a href="https://knows.idlab.ugent.be">IDLab - Ghent University</a></span>)
-     <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:miel.vandersande@meemoo.be">Miel Vander Sande</a> (<span class="p-org org">meemoo - <a href="https://meemoo.be">Flemish Institute for Archiving</a></span>)
-     <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:ruben.dedecker@ugent.be">Ruben Dedecker</a> (<span class="p-org org"><a href="https://knows.idlab.ugent.be">IDLab - Ghent University</a></span>)
-     <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:Jeroen.Werbrouck@ugent.be">Jeroen Werbrouck</a> (<span class="p-org org"><a href="https://knows.idlab.ugent.be">IDLab - Ghent University</a></span>)
-     <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:hvdesomp@gmail.com">Herbert Van de Sompel</a> (<span class="p-org org"><a href="https://dans.knaw.nl/nl/">DANS + Ghent University</a></span>)
+     <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:patrick.hochstenbach@ugent.be">Patrick Hochstenbach</a> (<span class="p-org org">[IDLab - Université de Gand] (https://knows.idlab.ugent.be)</span>)
+     <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:miel.vandersande@meemoo.be">Miel Vander Sande</a> (<span class="p-org org">meemoo - [Institut flamand pour l'archivage] (https://meemoo.be)</span>)
+     <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:ruben.dedecker@ugent.be">Ruben Dedecker</a> (<span class="p-org org">[IDLab - Université de Gand] (https://knows.idlab.ugent.be)</span>)
+     <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:Jeroen.Werbrouck@ugent.be">Jeroen Werbrouck</a> (<span class="p-org org">[IDLab - Université de Gand] (https://knows.idlab.ugent.be)</span>)
     </dl>
    </div>
    <div data-fill-with="warning"></div>
-   <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" src="https://licensebuttons.net/p/zero/1.0/80x15.png"></a> To the extent possible under law, the editors have waived all copyright
+   <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" height="15" src="https://licensebuttons.net/p/zero/1.0/80x15.png" width="80"></a> To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 24 November 2021,
+In addition, as of 28 November 2023,
 the editors have made this specification available under the <a href="http://www.openwebfoundation.org/legal/the-owf-1-0-agreements/owfa-1-0" rel="license">Open Web Foundation Agreement Version 1.0</a>,
 which is available at http://www.openwebfoundation.org/legal/the-owf-1-0-agreements/owfa-1-0.
 Parts of this work may be from another specification document.  If so, those parts are instead covered by the license of that specification document. </p>
@@ -1428,39 +1948,39 @@ Parts of this work may be from another specification document.  If so, those par
   </div>
   <div class="p-summary" data-fill-with="abstract">
    <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
-   <p>This document specifies the definition and application of a rule language to capture machine-readable business processes.</p>
+   <p>Ce document spécifie la définition et l’application d’un langage de règles pour capturer des processus métiers lisibles par machine.</p>
   </div>
   <div data-fill-with="at-risk"></div>
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#set"><span class="secno">1</span> <span class="content">Set of documents</span></a>
+    <li><a href="#set"><span class="secno">1</span> <span class="content">Ensemble de documents</span></a>
     <li><a href="#intro"><span class="secno">2</span> <span class="content">Introduction</span></a>
     <li>
-     <a href="#rulebook-language"><span class="secno">3</span> <span class="content">Rulebook language</span></a>
+     <a href="#rgles-du-jeu"><span class="secno">3</span> <span class="content">Règles du jeu</span></a>
      <ol class="toc">
-      <li><a href="#simple-example"><span class="secno">3.1</span> <span class="content">Simple example</span></a>
+      <li><a href="#exemple-simple"><span class="secno">3.1</span> <span class="content">Exemple simple</span></a>
       <li><a href="#conditions"><span class="secno">3.2</span> <span class="content">Conditions</span></a>
       <li><a href="#actions"><span class="secno">3.3</span> <span class="content">Actions</span></a>
-      <li><a href="#result"><span class="secno">3.4</span> <span class="content">Result</span></a>
+      <li><a href="#rsultat"><span class="secno">3.4</span> <span class="content">Résultat</span></a>
      </ol>
     <li>
-     <a href="#examples"><span class="secno">4</span> <span class="content">Examples</span></a>
+     <a href="#exemples"><span class="secno">4</span> <span class="content">Exemples</span></a>
      <ol class="toc">
-      <li><a href="#receving-linked-data-notifications"><span class="secno">4.1</span> <span class="content">Receving Linked Data Notifications</span></a>
+      <li><a href="#rception-de-notifications-de-donnes-lies"><span class="secno">4.1</span> <span class="content">Réception de notifications de données liées</span></a>
       <li>
-       <a href="#other-triggers"><span class="secno">4.2</span> <span class="content">Other Triggers</span></a>
+       <a href="#autres-dclencheurs"><span class="secno">4.2</span> <span class="content">Autres déclencheurs</span></a>
        <ol class="toc">
-        <li><a href="#observing-resource-state-changes"><span class="secno">4.2.1</span> <span class="content">Observing resource state changes</span></a>
-        <li><a href="#scheduled-trigger"><span class="secno">4.2.2</span> <span class="content">Scheduled trigger</span></a>
+        <li><a href="#observer-les-changements-dtat-des-ressources"><span class="secno">4.2.1</span> <span class="content">Observer les changements d’état des ressources</span></a>
+        <li><a href="#dclencheur-planifi"><span class="secno">4.2.2</span> <span class="content">Déclencheur planifié</span></a>
        </ol>
      </ol>
     <li>
-     <a href="#implementation-hints"><span class="secno">5</span> <span class="content">Implementation Hints</span></a>
+     <a href="#suggestions-de-mise-en-uvre"><span class="secno">5</span> <span class="content">Suggestions de mise en œuvre</span></a>
      <ol class="toc">
       <li><a href="#sparql"><span class="secno">5.1</span> <span class="content">SPARQL</span></a>
-      <li><a href="#notation3"><span class="secno">5.2</span> <span class="content">Notation3</span></a>
      </ol>
+    <li><a href="#remerciements"><span class="secno">6</span> <span class="content">Remerciements</span></a>
     <li><a href="#conformance"><span class="secno"></span> <span class="content"> Conformance</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
@@ -1470,54 +1990,55 @@ Parts of this work may be from another specification document.  If so, those par
    </ol>
   </nav>
   <main>
-   <h2 class="heading settled" data-level="1" id="set"><span class="secno">1. </span><span class="content">Set of documents</span><a class="self-link" href="#set"></a></h2>
-   <p>This document is one of the specifications produced by the <strong>ResearcherPod</strong> and <strong>ErfgoedPod</strong> project:</p>
+   <h2 class="heading settled" data-level="1" id="set"><span class="secno">1. </span><span class="content">Ensemble de documents</span><a class="self-link" href="#set"></a></h2>
+   <p>Ce document fait partie des spécifications produites par les projets <strong>ResearcherPod</strong> et <strong>ErfgoedPod</strong> :</p>
    <ol>
     <li data-md>
-     <p><a href="/spec-overview/">Overview</a></p>
+     <p><a href="/spec-overview/">Aperçu</a></p>
     <li data-md>
      <p><a href="/spec-orchestrator/">Orchestrator</a></p>
     <li data-md>
      <p><a href="/spec-datapod/">Data Pod</a></p>
     <li data-md>
-     <p><a href="/spec-rulelanguage/">Rule language</a> (this document)</p>
+     <p><a href="/spec-rulelanguage/">Langage de règles</a> (ce document)</p>
     <li data-md>
-     <p><a href="/spec-eventlog/">Artefact Lifecycle Event Log</a></p>
+     <p><a href="/spec-eventlog/">Journal des événements du cycle de vie des artefacts</a></p>
     <li data-md>
      <p><a href="/spec-notifications/">Notifications</a></p>
     <li data-md>
-     <p><a href="/spec-collector/">Collector</a></p>
+     <p><a href="/spec-collector/">Collecteur</a></p>
    </ol>
    <h2 class="heading settled" data-level="2" id="intro"><span class="secno">2. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
-   <p>Introduction here.</p>
-   <h2 class="heading settled" data-level="3" id="rulebook-language"><span class="secno">3. </span><span class="content">Rulebook language</span><a class="self-link" href="#rulebook-language"></a></h2>
-   <p>A Rulebook is set of machine-readable business rules that instruct the Orchestrator
-what <a href="/spec-overview/#Action">Actions</a> to take in response to a <a href="/spec-overview/#Trigger">Trigger</a> such as incoming LDN notifications.</p>
-   <p>To demonstrate the capabilities of the policies and possible use-cases it should cover, we introduce a
-pseudo rule language which acts as a guide to find reference implementations. Our pseudolanguage
-combines features of Drools and SPARQL. Examples are given how some of the features
-of this language can be implemented in a concrete implementation.</p>
-   <p>Each rule in a rulebook has the structure of <strong>rulebook</strong>, <strong>rule</strong>, <strong>when</strong>, <strong>then</strong> clauses:</p>
-   <div class="example" id="example-fef4fe7b">
-    <a class="self-link" href="#example-fef4fe7b"></a> <strong>rulebook</strong> <em>Description</em>? 
-    <p># This is a comment</p>
-    <p>[<em>Prefix</em>]*</p>
-    <p><strong>rule</strong> <em>Description</em>?</p>
-    <p>[<em>Prefix</em>]*</p>
-    <p><strong>when</strong></p>
+   <p>Introduction ici.</p>
+   <h2 class="heading settled" data-level="3" id="rgles-du-jeu"><span class="secno">3. </span><span class="content">Règles du jeu</span><a class="self-link" href="#rgles-du-jeu"></a></h2>
+   <p>Un règlement est un ensemble de règles métiers lisibles par machine qui indiquent à l’orchestrateur
+les <a href="/spec-overview/#Action">actions</a> à prendre en réponse à un <a href="/spec-overview/#Trigger">déclencheur</a> tel que les notifications LDN entrantes.</p>
+   <p>Pour démontrer les capacités des politiques et les cas d’utilisation possibles qu’elle doit couvrir, nous introduisons un
+pseudo-langage de règles qui sert de guide pour trouver des implémentations de référence. Notre pseudolangage
+combine des fonctionnalités de Drools et SPARQL. Des exemples sont donnés de la façon dont certaines des fonctionnalités
+de ce langage peuvent être mises en œuvre dans une implémentation concrète.</p>
+   <p>Chaque règle dans un règlement a la structure des clauses de <strong>règlement</strong>, <strong>règle</strong>, <strong>quand</strong>, <strong>alors</strong> :</p>
+   <div class="example" id="example-dc09a18d">
+    <a class="self-link" href="#example-dc09a18d"></a> <strong>règlement</strong> <em>Description</em>? 
+    <p># Ceci est un commentaire</p>
+    <p>[<em>Prefixe</em>]*</p>
+    <p><strong>règle</strong> <em>Description</em>?</p>
+    <p>[<em>Prefixe</em>]*</p>
+    <p><strong>quand</strong></p>
     <p>[<em>Condition</em>] *</p>
-    <p><strong>then</strong></p>
+    <p><strong>alors</strong></p>
     <p>[<em>Action</em>] *</p>
    </div>
-   <p>A <strong>rulebook</strong> can have one or more <strong>rule</strong>-s. Each <strong>rule</strong> has one <strong>when</strong> clause that
-contains zero or more conditions that need to match for a graph. Each <strong>rule</strong> has one <strong>then</strong> clause that contains zero or more actions, new generated triples, when an input graph matches
-the conditions. The <strong>rulebook</strong> section and each <strong>rule</strong> can define prefix abbreviations for triple patterns.
-All lines starting with an hash (#) are interpreted as comments.</p>
-   <h3 class="heading settled" data-level="3.1" id="simple-example"><span class="secno">3.1. </span><span class="content">Simple example</span><a class="self-link" href="#simple-example"></a></h3>
-   <p>An example of a simple rule:</p>
-   <div class="example" id="example-22d4746a">
-    <a class="self-link" href="#example-22d4746a"></a> 
-<pre><b>rule</b> "Add to the EventLog"
+   <p>Un <strong>règlement</strong> peut avoir une ou plusieurs <strong>règles</strong>. Chaque <strong>règle</strong> a une clause <strong>quand</strong> qui
+contient zéro ou plusieurs conditions qui doivent correspondre à un graphe. Chaque <strong>règle</strong> a une clause <strong>alors</strong> qui
+contient zéro ou plusieurs actions, de nouveaux triplets générés, lorsqu’un graphe d’entrée correspond
+aux conditions. La section <strong>règlement</strong> et chaque <strong>règle</strong> peuvent définir des abréviations de préfixes pour les motifs triples.
+Toutes les lignes commençant par un dièse (#) sont interprétées comme des commentaires.</p>
+   <h3 class="heading settled" data-level="3.1" id="exemple-simple"><span class="secno">3.1. </span><span class="content">Exemple simple</span><a class="self-link" href="#exemple-simple"></a></h3>
+   <p>Un exemple de règle simple :</p>
+   <div class="example" id="example-df0b3b20">
+    <a class="self-link" href="#example-df0b3b20"></a> 
+<pre><b>règle</b> "Ajouter à l’EventLog"
 
 ex:   &lt;http://example.org/>
 as:   &lt;https://www.w3.org/ns/activitystreams#>
@@ -1525,12 +2046,12 @@ rdf:  &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 pol:  &lt;https://www.example.org/ns/policy#>
 fno:  &lt;https://w3id.org/function/ontology#>
 
-<b>when</b>
+<b>quand</b>
 
-  ?s a as:Announce . <i>OR</i>
+  ?s a as:Announce . <i>OU</i>
     ?s a as:Create .
 
-<b>then</b>
+<b>alors</b>
 
   ?s pol:policy [
       a fno:Execution ;
@@ -1542,7 +2063,7 @@ fno:  &lt;https://w3id.org/function/ontology#>
   ] .
 </pre>
    </div>
-   <p>Given an LDN Notification:</p>
+   <p>Etant donné une notification LDN :</p>
    <div class="example" id="example-d1d6c268">
     <a class="self-link" href="#example-d1d6c268"></a> 
 <pre>{
@@ -1558,7 +2079,7 @@ fno:  &lt;https://w3id.org/function/ontology#>
 }
 </pre>
    </div>
-   <p>the rules will result in an output:</p>
+   <p>les règles donneront une sortie :</p>
    <div class="example" id="example-b6431853">
     <a class="self-link" href="#example-b6431853"></a> 
 <pre>@prefix ex:   &lt;http://example.org/> .
@@ -1577,60 +2098,60 @@ fno:  &lt;https://w3id.org/function/ontology#>
 ] .
 </pre>
    </div>
-   <p>These resulrs could start up an <a href="/spec-overview/#Orchestrator">Orchestrator</a> process that adds the Create event
-to the <a href="/spec-overview/#EventLog">EventLog</a> and removes the <code>bcc</code> blind copies.</p>
+   <p>Ces résultats pourraient déclencher un processus <a href="/spec-overview/#Orchestratrice">Orchestratrice</a> qui ajoute l’événement Create
+au <a href="/spec-overview/#EventLog">EventLog</a> et supprime les copies aveugles <code>bcc</code>.</p>
    <h3 class="heading settled" data-level="3.2" id="conditions"><span class="secno">3.2. </span><span class="content">Conditions</span><a class="self-link" href="#conditions"></a></h3>
-   <p>Conditions in the <strong>when</strong> clause are interpreted as boolean statements. When the
-condition is in the format of a triple, it means the <em>existence</em> of the triple in the
-input data. This behavior matches SPARQL <em>WHERE</em> clause statements:</p>
-   <div class="example" id="example-bc237712">
-    <a class="self-link" href="#example-bc237712"></a> 
-<pre><b>when</b>
-    ?s foaf:name "Herbert"  .      # a property <code>foad:name</code> equals "Herbert" shoud exist
-    ?s ?p  42  .                   # a property with value 42 should exist
-    ?s/as:object nrr:reviews ?o  . # a nested ?s/as:object/nrr:reviews should exist
+   <p>Les conditions dans la clause <strong>quand</strong> sont interprétées comme des déclarations booléennes. Lorsque le
+condition est au format d’un triplet, cela signifie l’existence du triplet dans la
+données d’entrée. Ce comportement correspond aux déclarations SPARQL <em>WHERE</em> :</p>
+   <div class="example" id="example-90ce21b4">
+    <a class="self-link" href="#example-90ce21b4"></a> 
+<pre><b>quand</b>
+    ?s foaf:name "Herbert"  .      # une propriété <code>foad:name</code> égale à "Herbert" doit exister
+    ?s ?p  42  .                   # une propriété avec une valeur de 42 doit exister
+    ?s/as:object nrr:reviews ?o  . # un ?s/as:object/nrr:reviews imbriqué doit exister
 </pre>
    </div>
-   <p>Functions in our pseudolanguage mimic the SPARQL <em>FILTER</em> statements:</p>
-   <div class="example" id="example-3834d66c">
-    <a class="self-link" href="#example-3834d66c"></a> 
-<pre>(?s ?p ?o) -> <i>SomeFunction with (?s,?p,?o)</i>
+   <p>Les fonctions de notre pseudolangage imitent les déclarations SPARQL <em>FILTER</em> :</p>
+   <div class="example" id="example-e9030aa3">
+    <a class="self-link" href="#example-e9030aa3"></a> 
+<pre>(?s ?p ?o) -> <i>SomeFunction avec (?s,?p,?o)</i>
 </pre>
    </div>
-   <p>Some examples:</p>
-   <div class="example" id="example-8475a31f">
-    <a class="self-link" href="#example-8475a31f"></a> 
-<pre><b>when</b>
-    # a resource has a class that is an as:Announce or as:Accept
+   <p>Voici quelques exemples :</p>
+   <div class="example" id="example-2d059da7">
+    <a class="self-link" href="#example-2d059da7"></a> 
+<pre><b>quand</b>
+    # une ressource a une classe qui est as:Announce ou as:Accept
     (?s a ?class) -> ?class IN (as:Announce , as:Accept) .
 
-    # a propety needs to have a case-insensitive name "yahoo"
+    # une propriété doit avoir un nom insensible à la casse "yahoo"
     (?s ?p ?o) -> regex(?o, "yahoo",i) .
 
-    # the as:object needs to have an IRI value
+    # l’as:object doit avoir une valeur IRI
     (?s as:object ?o) -> isIRI(?o) .
 
-    # the as:objects needs to have an IRI value or is a blankNode
+    # l’as:objects doit avoir une valeur IRI ou être un blankNode
     (?s as:object ?o) -> isIRI(?o) OR isBlank(?o) .
 
-    # the isLocalEventResouce should return a true value for the as:object value
+    # isLocalEventResouce doit renvoyer une valeur true pour la valeur as:object
     (?s as:object ?o) -> isLocalEventResouce(?o)
 
-    # the predicate and object should return a true value from myLocalFunction
+    # le prédicat et l’objet doivent renvoyer une valeur true de myLocalFunction
     (?s ?p ?o) -> myLocalFunction(?p, ?o) .
 
-    # combine with booleans
+    # combiner avec des booléens
     (?s as:object ?o) -> isIRI(?o) OR isBlank(?o) .
         OR ?s my:justATest true .
 
 </pre>
    </div>
    <h3 class="heading settled" data-level="3.3" id="actions"><span class="secno">3.3. </span><span class="content">Actions</span><a class="self-link" href="#actions"></a></h3>
-   <p>Actions are a list of zero or more statements that mimic the triples that are generated
-by the SPARQL <em>CONSTRUCT</em> statement:</p>
-   <div class="example" id="example-37e0eada">
-    <a class="self-link" href="#example-37e0eada"></a> 
-<pre><b>then</b>
+   <p>Les actions sont une liste de zéro ou plusieurs déclarations qui imitent les triplets générés
+par la déclaration SPARQL <em>CONSTRUCT</em> :</p>
+   <div class="example" id="example-8a496eea">
+    <a class="self-link" href="#example-8a496eea"></a> 
+<pre><b>alors</b>
 
     ?this pol:policy [
       a fno:Execution ;
@@ -1648,57 +2169,57 @@ by the SPARQL <em>CONSTRUCT</em> statement:</p>
     (?this ?_ ?_) -> SomeFunctionThatGeneratesTriplesFor(?this) .
 </pre>
    </div>
-   <h3 class="heading settled" data-level="3.4" id="result"><span class="secno">3.4. </span><span class="content">Result</span><a class="self-link" href="#result"></a></h3>
-   <p>The result of a rule execution is the generation of zero or more triples. These generated triples
-create a graph independent from the input graph of the rule engine. Rules can’t influence each other.
-This mimics the style of rule processing in SHACL.</p>
-   <p>An example:</p>
-   <div class="example" id="example-3d4a0e63">
-    <a class="self-link" href="#example-3d4a0e63"></a> 
-<pre><b>rule</b> "First rule"
+   <h3 class="heading settled" data-level="3.4" id="rsultat"><span class="secno">3.4. </span><span class="content">Résultat</span><a class="self-link" href="#rsultat"></a></h3>
+   <p>Le résultat de l’exécution d’une règle est la génération de zéro ou plusieurs triplets. Ces triplets générés
+créent un graphe indépendant du graphe d’entrée du moteur de règles. Les règles ne peuvent pas s’influencer mutuellement.
+Cela imite le style de traitement des règles dans SHACL.</p>
+   <p>Un exemple :</p>
+   <div class="example" id="example-0870edf4">
+    <a class="self-link" href="#example-0870edf4"></a> 
+<pre><b>règle</b> "Première règle"
 
-<b>when</b>
+<b>quand</b>
    ?s ?p ?o .
 
-<b>then</b>
-   ?s my:match "first rule" .
+<b>alors</b>
+   ?s my:match "première règle" .
 
 #---    <br>
-<b>rule</b> "Second rule"
+<b>règle</b> "Deuxième règle"
 
-<b>when</b>
+<b>quand</b>
   ?s ?p ?o .
 
-<b>then</b>
-  ?s my:match "second rule" .
+<b>alors</b>
+  ?s my:match "deuxième règle" .
 
 #---    <br>
-<b>rule</b> "Third rule"
+<b>règle</b> "Troisième règle"
 
-<b>when</b>
+<b>quand</b>
   ?s ?p ?o .
 
-<b>then</b>
-  ?s my:match "third rule" .
+<b>alors</b>
+  ?s my:match "troisième règle" .
 </pre>
    </div>
-   <p>When these three rules are excuted against any input graph, it will result in two
-graphs: the input graph and the result graph which contains:</p>
-   <div class="example" id="example-802f5d15">
-    <a class="self-link" href="#example-802f5d15"></a> 
-<pre>my:input_id my:match "third rule" .
-my:input_id my:match "first rule" .
-my:input_id my:match "second rule" .
+   <p>Lorsque ces trois règles sont exécutées contre n’importe quel graphe d’entrée, cela aboutit à deux
+graphes : le graphe d’entrée et le graphe de résultat qui contient :</p>
+   <div class="example" id="example-4b2df65e">
+    <a class="self-link" href="#example-4b2df65e"></a> 
+<pre>my:input_id my:match "troisième règle" .
+my:input_id my:match "première règle" .
+my:input_id my:match "deuxième règle" .
 </pre>
    </div>
-   <p class="note" role="note"><span>Note:</span> the order in which the rules are executed is not specified.</p>
-   <h2 class="heading settled" data-level="4" id="examples"><span class="secno">4. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h2>
-   <h3 class="heading settled" data-level="4.1" id="receving-linked-data-notifications"><span class="secno">4.1. </span><span class="content">Receving Linked Data Notifications</span><a class="self-link" href="#receving-linked-data-notifications"></a></h3>
-   <p>We demonstrate here how a rule can be created that acts on incoming Linked Data Notifications.</p>
-   <p>This rule will request to add an <em>AS2 Offer</em> to the <strong>EventLog</strong>:</p>
-   <div class="example" id="example-b45ecb3a">
-    <a class="self-link" href="#example-b45ecb3a"></a> 
-<pre><b>rule</b> "Add offer to the EventLog"
+   <p>Remarque : l’ordre dans lequel les règles sont exécutées n’est pas spécifié.</p>
+   <h2 class="heading settled" data-level="4" id="exemples"><span class="secno">4. </span><span class="content">Exemples</span><a class="self-link" href="#exemples"></a></h2>
+   <h3 class="heading settled" data-level="4.1" id="rception-de-notifications-de-donnes-lies"><span class="secno">4.1. </span><span class="content">Réception de notifications de données liées</span><a class="self-link" href="#rception-de-notifications-de-donnes-lies"></a></h3>
+   <p>Nous montrons ici comment une règle peut être créée qui agit sur les notifications de données liées entrantes.</p>
+   <p>Cette règle demandera d’ajouter une <em>offre AS2</em> au <strong>EventLog</strong> :</p>
+   <div class="example" id="example-28a8f554">
+    <a class="self-link" href="#example-28a8f554"></a> 
+<pre><b>règle</b> "Ajouter une offre à l’EventLog"
 
 ex:   &lt;http://example.org/>
 as:   &lt;https://www.w3.org/ns/activitystreams#>
@@ -1706,21 +2227,21 @@ rdf:  &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 pol:  &lt;https://www.example.org/ns/policy#>
 fno:  &lt;https://w3id.org/function/ontology#>
 
-<b>when</b>
+<b>quand</b>
 
   ?s a as:Offer .
 
-<b>then</b>
+<b>alors</b>
   ?s pol:policy [
     a fno:Execution ;
     fno:executes ex:appendToLog
   ] .
 </pre>
    </div>
-   <p>Given the following JSON-LD input:</p>
+   <p>Étant donné le JSON-LD d’entrée suivant :</p>
    <div class="example" id="example-fe0ac452">
     <a class="self-link" href="#example-fe0ac452"></a> 
-<pre class="language-(JSON)">{
+<pre>{
   "@context": [
     "https://www.w3.org/ns/activitystreams",
     "http://purl.org/coar/notify"
@@ -1761,7 +2282,7 @@ fno:  &lt;https://w3id.org/function/ontology#>
 }
 </pre>
    </div>
-   <p>The rulebook above will result in a new graph with these triples:</p>
+   <p>Le règlement ci-dessus donnera un nouveau graphe avec ces triplets :</p>
    <div class="example" id="example-49788837">
     <a class="self-link" href="#example-49788837"></a> 
 <pre>@prefix ex:   &lt;http://example.org/> .
@@ -1776,41 +2297,41 @@ fno:  &lt;https://w3id.org/function/ontology#>
 ] .
 </pre>
    </div>
-   <p>A rulebook interpeter, such as the Orchestrator, could use the
-new generated graph to write a copy of the notification in some way to the
-Artefact Lifecycle Event Log. The <code>pol:AppendToLog</code> is interpreted in this way
-as some agreed procedure call that needs to be executed on the JSON-LD input.</p>
-   <h3 class="heading settled" data-level="4.2" id="other-triggers"><span class="secno">4.2. </span><span class="content">Other Triggers</span><a class="self-link" href="#other-triggers"></a></h3>
-   <p>AS2 Notifications can not only be generated by external actors but
-also internal local processes. For instance, at periodic intervals the
-Orchestrator can monitor an (external) resource. When the state of a resource
-changes, then it can trigger the creation of a AS2 notification. The rulebook
-can act on these notifications and decide what to do with this information.</p>
-   <p>How these internal trigger notifications get generated is outside the scope
-of this specification. We assume that the activation of a trigger results in
-the generation of an AS2 notification.</p>
-   <h4 class="heading settled" data-level="4.2.1" id="observing-resource-state-changes"><span class="secno">4.2.1. </span><span class="content">Observing resource state changes</span><a class="self-link" href="#observing-resource-state-changes"></a></h4>
-   <p>This trigger is generated when a monitored (external) resource has a state change.</p>
-   <p>In the example below a new resource <code>http://my.instutution.org/people/124/publications/a03218h</code> was created by <code>http://my.instutution.org/people/124</code>. The Orchestrator is triggered
-— by itself or an external trusted source — of this fact using the AS2 notification:</p>
-   <div class="example" id="example-c30ba0f6">
-    <a class="self-link" href="#example-c30ba0f6"></a> 
+   <p>Un interpréteur de règles, tel que l’Orchestratrice, pourrait utiliser
+ce nouveau graphe généré pour écrire une copie de la notification d’une manière ou d’une autre dans le
+Journal des événements du cycle de vie de l’Artéfact. La déclaration <code>pol:appendToLog</code> est interprétée de cette manière
+comme un appel de procédure convenu qui doit être exécuté sur l’entrée JSON-LD.</p>
+   <h3 class="heading settled" data-level="4.2" id="autres-dclencheurs"><span class="secno">4.2. </span><span class="content">Autres déclencheurs</span><a class="self-link" href="#autres-dclencheurs"></a></h3>
+   <p>Les notifications AS2 ne peuvent pas seulement être générées par des acteurs externes mais aussi
+par des processus locaux internes. Par exemple, à intervalles périodiques, l'
+(externe) Orchestratrice peut surveiller une ressource. Lorsque l’état d’une ressource
+change, alors cela peut déclencher la création d’une notification AS2. Le règlement
+peut agir sur ces notifications et décider quoi faire avec ces informations.</p>
+   <p>La façon dont ces notifications de déclenchement internes sont générées est hors de la portée
+de cette spécification. Nous supposons que l’activation d’un déclencheur entraîne
+la génération d’une notification AS2.</p>
+   <h4 class="heading settled" data-level="4.2.1" id="observer-les-changements-dtat-des-ressources"><span class="secno">4.2.1. </span><span class="content">Observer les changements d’état des ressources</span><a class="self-link" href="#observer-les-changements-dtat-des-ressources"></a></h4>
+   <p>Ce déclencheur est généré lorsqu’une ressource (externe) surveillée change d’état.</p>
+   <p>Dans l’exemple ci-dessous, une nouvelle ressource <code>http://my.instutution.org/people/124/publications/a03218h</code> a été créée par <code>http://my.instutution.org/people/124</code>. L’Orchestratrice est déclenchée
+— par elle-même ou une source de confiance externe — de ce fait en utilisant la notification AS2 :</p>
+   <div class="example" id="example-f17236d9">
+    <a class="self-link" href="#example-f17236d9"></a> 
 <pre>{
   "@context": [
-      "https://www.w3.org/ns/activitystreams",
-      "https://www.example.org/ns/policy"
-  ] ,
-  "type": [ "Create" , "pol:StateTrigger" ] ,
-  "actor": "http://my.instutution.org/people/124" ,
-  "object": "http://my.instutution.org/people/124/publications/a03218h" ,
-  "summary": "A new publication was created by person 1234"
+    "https://www.w3.org/ns/activitystreams",
+    "https://www.example.org/ns/policy"
+  ],
+  "actor": "http://my.instutution.org/people/124",
+  "id": "urn:uuid:0370c0fb-bb78-4a9b-87f5-bed307a509dd",
+  "object": "http://my.instutution.org/people/124/publications/a03218h",
+  "summary": "Une nouvelle publication a été créée par la personne 1234"
 }
 </pre>
    </div>
-   <p>A rulebook to send emails when these types of StateTrigger occur can be defined as follows:</p>
-   <div class="example" id="example-c816e744">
-    <a class="self-link" href="#example-c816e744"></a> 
-<pre><b>rule</b> "Add State Trigger definitions"
+   <p>Un règlement pour envoyer des e-mails lorsque ce type de déclencheur d’état se produit peut être défini comme suit :</p>
+   <div class="example" id="example-b082c6ab">
+    <a class="self-link" href="#example-b082c6ab"></a> 
+<pre><b>règle</b> "Ajouter des définitions de déclencheur d’état"
 
 ex:   &lt;http://example.org/>
 as:   &lt;https://www.w3.org/ns/activitystreams#>
@@ -1818,25 +2339,25 @@ rdf:  &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 pol:  &lt;https://www.example.org/ns/policy#>
 fno:  &lt;https://w3id.org/function/ontology#>
 
-<b>when</b>
+<b>quand</b>
 
-  ?s a pol:StateTrigger . AND
+  ?s a pol:StateTrigger . ET
     ?s a as:Create .
 
-<b>then</b>
+<b>alors</b>
   ?s pol:policy [
       a fno:Execution ;
       fno:executes ex:sendEmail ;
       ex:from "my@myself.and.i" ;
       ex:to "you@yourself.edu" ;
-      ex:subject "A new resource was created!"
+      ex:subject "Une nouvelle ressource a été créée !"
   ] .
 
 </pre>
    </div>
-   <p>The execution of the rulebook will result in a new graph with these triples:</p>
-   <div class="example" id="example-ba5ac03e">
-    <a class="self-link" href="#example-ba5ac03e"></a> 
+   <p>L’exécution du règlement donnera un nouveau graphe avec ces triplets :</p>
+   <div class="example" id="example-806739f4">
+    <a class="self-link" href="#example-806739f4"></a> 
 <pre>@prefix ex:   &lt;http://example.org/> .
 @prefix as:   &lt;https://www.w3.org/ns/activitystreams#> .
 @prefix rdf:  &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -1848,39 +2369,41 @@ _:b0 pol:policy [
     fno:executes ex:sendEmail ;
     ex:from "my@myself.and.i" ;
     ex:to "you@yourself.edu" ;
-    ex:subject "A new resource was created!"
+    ex:subject "Une nouvelle ressource a été créée !"
 ] .
 </pre>
    </div>
-   <p>Some <code>SendEmail</code> process could use this input with the AS2 notification above to
-send an email to <code>you@yourself.edu</code> about the new resource.</p>
-   <div class="note" role="note"> We assume there are some reasonable security measures in place, such as digital
-signatures, to limit the applications that are allowed to send these type of
-trigger events to the rulebook engine. </div>
-   <h4 class="heading settled" data-level="4.2.2" id="scheduled-trigger"><span class="secno">4.2.2. </span><span class="content">Scheduled trigger</span><a class="self-link" href="#scheduled-trigger"></a></h4>
-   <p>A scheduled trigger is defined as a recurrent activity at a scheduled interval.
-In the example below we assume that cron based process is capable to generate
-an AS2 notification at a specific time. We assume that every Friday at 17:00
-CEST the <code>Weekend</code> trigger is activated.</p>
-   <div class="example" id="example-8693faed">
-    <a class="self-link" href="#example-8693faed"></a> 
+   <p>Un certain processus <code>SendEmail</code> pourrait utiliser cette entrée avec la notification AS2 ci-dessus pour
+envoyer un e-mail à <code>you@yourself.edu</code> à propos de la nouvelle ressource.</p>
+   <div class="note" role="note"> Nous supposons qu’il existe des mesures de sécurité raisonnables en place, telles que des
+signatures numériques, pour limiter les applications autorisées à envoyer ce type de
+événements de déclenchement au moteur de règles. </div>
+   <h4 class="heading settled" data-level="4.2.2" id="dclencheur-planifi"><span class="secno">4.2.2. </span><span class="content">Déclencheur planifié</span><a class="self-link" href="#dclencheur-planifi"></a></h4>
+   <p>Un déclencheur planifié est défini comme une activité récurrente à intervalle régulier.
+Dans l’exemple ci-dessous, nous supposons qu’un processus basé sur cron est capable de générer
+une notification AS2 à un moment précis. Nous supposons que tous les vendredis à 17h00
+CEST, le déclencheur <code>Weekend</code> est activé.</p>
+   <div class="example" id="example-26b6e5dc">
+    <a class="self-link" href="#example-26b6e5dc"></a> 
 <pre class="language-(JSON)">{
   "@context": [
-      "https://www.w3.org/ns/activitystreams",
-      "https://www.example.org/ns/policy"
-  ] ,
-  "summary": "Time Trigger",
+    "https://www.w3.org/ns/activitystreams",
+    "https://www.example.org/ns/policy"
+  ],
+  "summary": "Déclencheur temporel",
   "name": "Weekend",
-  "type": [ "Announce" , "pol:DateTimeTrigger" ],
+  "type": [
+    "Announce" , "pol:DateTimeTrigger"
+  ],
   "startTime": "2021-07-09T17:00:00-01:00"
 }
 </pre>
    </div>
-   <p>A policy rule could be that on weekends a notification is send out to your
-friends:</p>
-   <div class="example" id="example-71834bc5">
-    <a class="self-link" href="#example-71834bc5"></a> 
-<pre><b>rule</b> "Add State Trigger definitions"
+   <p>Une règle de politique pourrait être que pendant les weekends, une notification est envoyée à vos
+amis :</p>
+   <div class="example" id="example-4fb3755f">
+    <a class="self-link" href="#example-4fb3755f"></a> 
+<pre><b>règle</b> "Ajouter des définitions de déclencheur d’état"
 
 ex:   &lt;http://example.org/>
 as:   &lt;https://www.w3.org/ns/activitystreams#>
@@ -1888,12 +2411,12 @@ rdf:  &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 pol:  &lt;https://www.example.org/ns/policy#>
 fno:  &lt;https://w3id.org/function/ontology#>
 
-<b>when</b>
+<b>quand</b>
 
-  ?s a pol:DateTimeTrigger . AND ?s a as:Announce .
+  ?s a pol:DateTimeTrigger . ET ?s a as:Announce .
   ?s as:name "Weekend" .
 
-<b>then</b>
+<b>alors</b>
   ?s pol:policy [
     a fno:Execution ;
     fno:executes ex:sendActivity ;
@@ -1905,7 +2428,7 @@ fno:  &lt;https://w3id.org/function/ontology#>
       ] ;
       as:object [
         a as:Note ;
-        as:name "Let’s go to the pub"
+        as:name "Allons au pub"
       ] ;
       as:to &lt;http://pod.me/my#friends>
     ]
@@ -1913,9 +2436,9 @@ fno:  &lt;https://w3id.org/function/ontology#>
 
 </pre>
    </div>
-   <h2 class="heading settled" data-level="5" id="implementation-hints"><span class="secno">5. </span><span class="content">Implementation Hints</span><a class="self-link" href="#implementation-hints"></a></h2>
+   <h2 class="heading settled" data-level="5" id="suggestions-de-mise-en-uvre"><span class="secno">5. </span><span class="content">Suggestions de mise en œuvre</span><a class="self-link" href="#suggestions-de-mise-en-uvre"></a></h2>
    <h3 class="heading settled" data-level="5.1" id="sparql"><span class="secno">5.1. </span><span class="content">SPARQL</span><a class="self-link" href="#sparql"></a></h3>
-   <p>Example 2 - Add to the EventLog</p>
+   <p>Exemple 2 - Ajouter à l’EventLog</p>
    <div class="example" id="example-9c7703e8">
     <a class="self-link" href="#example-9c7703e8"></a> 
 <pre>PREFIX ex: &lt;http://example.org/>
@@ -1940,7 +2463,7 @@ WHERE {
 }
 </pre>
    </div>
-   <p>Example 5 - Conditions</p>
+   <p>Exemple 5 - Conditions</p>
    <div class="example" id="example-d6f0d882">
     <a class="self-link" href="#example-d6f0d882"></a> 
 <pre>PREFIX ex: &lt;http://example.org/>
@@ -1958,37 +2481,14 @@ WHERE {
 }
 </pre>
    </div>
-   <p>Example 7 - Function Examples</p>
-   <div class="example" id="example-8bffbf9a">
-    <a class="self-link" href="#example-8bffbf9a"></a> 
+   <p>Exemple 7 - Exemples de fonctions</p>
+   <div class="example" id="example-b74fd132">
+    <a class="self-link" href="#example-b74fd132"></a> 
 <pre>PREFIX ex: &lt;http://example.org/>
 PREFIX as: &lt;https://www.w3.org/ns/activitystreams#>
 PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX pol: &lt;https://www.example.org/ns/policy#>
-PREFIX fno: &lt;https://w3id.org/function/ontology#>
-CONSTRUCT {
-  ...
-}
-WHERE {
-  ?this a ?class .
-  ?this foo:name ?foo_val .
-  ?this as:object ?object_val .
-
-  FILTER ( ?class IN (as:Announce , as:Accept)  )
-  FILTER ( regex(?foo_val, "yahoo", i) )
-  FILTER ( isIRI(?object_val) || isBlank(?object_val) )
-}
-</pre>
-   </div>
-   <h3 class="heading settled" data-level="5.2" id="notation3"><span class="secno">5.2. </span><span class="content">Notation3</span><a class="self-link" href="#notation3"></a></h3>
-   <p>Example 2 - Add to the EventLog</p>
-   <div class="example" id="example-79212ae8">
-    <a class="self-link" href="#example-79212ae8"></a> 
-<pre>PREFIX ex: &lt;http://example.org/>
-PREFIX as: &lt;https://www.w3.org/ns/activitystreams#>
-PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX pol: &lt;https://www.example.org/ns/policy#>
-PREFIX fno: &lt;https://w3id.org/function/ontology#>
+PREFIX fno: &lt;https://www.example.org/ns/policy#>
 PREFIX list: &lt;http://www.w3.org/2000/10/swap/list#>
 
 {
@@ -2008,33 +2508,61 @@ PREFIX list: &lt;http://www.w3.org/2000/10/swap/list#>
 } .
 </pre>
    </div>
-   <p>Example 5 - Conditions</p>
-   <div class="example" id="example-ff884ea9">
-    <a class="self-link" href="#example-ff884ea9"></a> 
+   <p>Exemple 2 - Ajouter à l’EventLog</p>
+   <div class="example" id="example-4d86338b">
+    <a class="self-link" href="#example-4d86338b"></a> 
 <pre>PREFIX ex: &lt;http://example.org/>
 PREFIX as: &lt;https://www.w3.org/ns/activitystreams#>
 PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX pol: &lt;https://www.example.org/ns/policy#>
 PREFIX fno: &lt;https://w3id.org/function/ontology#>
+PREFIX list: &lt;http://www.w3.org/2000/10/swap/list#>
+
+{
+  ?s a ?class .
+  ?class list:in (as:Announce as:Create) .
+}
+==>
+{
+  ?s pol:policy [
+      a fno:Execution ;
+      fno:executes ex:appendToLog
+  ] .
+  ?s pol:policy [
+      a fno:Execution ;
+      fno:executes ex:removeBlindCopies
+  ] .
+} .
+</pre>
+   </div>
+   <p>Exemple 5 - Conditions</p>
+   <div class="example" id="example-243a4ad7">
+    <a class="self-link" href="#example-243a4ad7"></a> 
+<pre>PREFIX ex: &lt;http://example.org/>
+PREFIX as: &lt;https://www.w3.org/ns/activitystreams#>
+PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX pol: &lt;https://www.example.org/ns/policy#>
+PREFIX fno: &lt;https://www.example.org/ns/policy#>
 
 {
   ?this foaf:name "Herbert"  .
   ?this ?p  42  .
   ?this!as:object nrr:reviews ?o .
 }
-=> {
+=>
+{
   ...
 } .
 </pre>
    </div>
-   <p>Example 7 - Function Examples</p>
-   <div class="example" id="example-967d4ac6">
-    <a class="self-link" href="#example-967d4ac6"></a> 
+   <p>Exemple 7 - Exemples de fonctions</p>
+   <div class="example" id="example-d361a152">
+    <a class="self-link" href="#example-d361a152"></a> 
 <pre>PREFIX ex: &lt;http://example.org/>
 PREFIX as: &lt;https://www.w3.org/ns/activitystreams#>
 PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX pol: &lt;https://www.example.org/ns/policy#>
-PREFIX fno: &lt;https://w3id.org/function/ontology#>
+PREFIX fno: &lt;https://www.example.org/ns/policy#>
 PREFIX list: &lt;http://www.w3.org/2000/10/swap/list#>
 PREFIX string: &lt;http://www.w3.org/2000/10/swap/string#>
 PREFIX math: &lt; http://www.w3.org/2000/10/swap/math#>
@@ -2054,7 +2582,10 @@ PREFIX math: &lt; http://www.w3.org/2000/10/swap/math#>
 } .
 </pre>
    </div>
-   <p>More Notation3 examples are available at <a href="https://github.com/MellonScholarlyCommunication/spec-rulelanguage/tree/master/examples/n3">https://github.com/MellonScholarlyCommunication/spec-rulelanguage/tree/master/examples/n3</a>.</p>
+   <p>Des exemples supplémentaires de notation3 sont disponibles sur <a href="https://github.com/MellonScholarlyCommunication/spec-rulelanguage/tree/master/examples/n3">https://github.com/MellonScholarlyCommunication/spec-rulelanguage/tree/master/examples/n3</a>.</p>
+   <h2 class="heading settled" data-level="6" id="remerciements"><span class="secno">6. </span><span class="content">Remerciements</span><a class="self-link" href="#remerciements"></a></h2>
+   <p>Nous remercions Herbert Van de Sompel, <a href="https://dans.knaw.nl/nl/">DANS + Université de Gand</a>, hvdsomp@gmail.com
+pour sa précieuse contribution lors de ce projet.</p>
   </main>
   <div data-fill-with="conformance">
    <h2 class="no-ref no-num heading settled" id="conformance"><span class="content"> Conformance</span><a class="self-link" href="#conformance"></a></h2>
@@ -2065,13 +2596,13 @@ PREFIX math: &lt; http://www.w3.org/2000/10/swap/math#>
             However, for readability,
             these words do not appear in all uppercase letters in this specification. </p>
    <p> All of the text of this specification is normative
-            except sections explicitly marked as non-normative, examples, and notes. <a data-link-type="biblio" href="#biblio-rfc2119">[RFC2119]</a> </p>
+            except sections explicitly marked as non-normative, examples, and notes. <a data-link-type="biblio" href="#biblio-rfc2119" title="Key words for use in RFCs to Indicate Requirement Levels">[RFC2119]</a> </p>
    <p> Examples in this specification are introduced with the words “for example”
             or are set apart from the normative text with <code>class="example"</code>, like this: </p>
    <div class="example" id="example-example"><a class="self-link" href="#example-example"></a> This is an example of an informative example. </div>
    <p> Informative notes begin with the word “Note”
             and are set apart from the normative text with <code>class="note"</code>, like this: </p>
-   <p class="note" role="note"> Note, this is an informative note. </p>
+   <p class="note" role="note"> Note, this is an informative note.</p>
   </div>
 <script>
 (function() {
@@ -2206,5 +2737,5 @@ PREFIX math: &lt; http://www.w3.org/2000/10/swap/math#>
   <h3 class="no-num no-ref heading settled" id="normative"><span class="content">Normative References</span><a class="self-link" href="#normative"></a></h3>
   <dl>
    <dt id="biblio-rfc2119">[RFC2119]
-   <dd>S. Bradner. <a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="https://tools.ietf.org/html/rfc2119">https://tools.ietf.org/html/rfc2119</a>
+   <dd>S. Bradner. <a href="https://datatracker.ietf.org/doc/html/rfc2119"><cite>Key words for use in RFCs to Indicate Requirement Levels</cite></a>. March 1997. Best Current Practice. URL: <a href="https://datatracker.ietf.org/doc/html/rfc2119">https://datatracker.ietf.org/doc/html/rfc2119</a>
   </dl>
